@@ -213,7 +213,7 @@ extension SearchViewController: UISearchBarDelegate {
                     print("Dictionary \(jsonDictionary)")
                     // Llamamos la siguiente método para parsear los datos recibidos y se los asignamos a la variable
                     // de instancia de la tableView para que  pueda mostrar los objetos obtenidos en la búsqueda real.
-                    searchResults = parse(dictionary: jsonDictionary) 
+                    searchResults = parse(dictionary: jsonDictionary)
                     // Recargamos la tabla. Update.
                     tableView.reloadData()
                     return
@@ -228,6 +228,24 @@ extension SearchViewController: UISearchBarDelegate {
     // encima de la tabla y se vea correctamente extendiéndose correctamente.
     func position(for bar: UIBarPositioning) -> UIBarPosition {
         return .topAttached
+    }
+    
+    // MARK: Others
+    
+    func kindForDisplay(_ kind: String) -> String {
+        switch kind {
+        case "album": return "Album"
+        case "audiobook": return "Audio Book"
+        case "book": return "Book"
+        case "ebook": return "E-Book"
+        case "feature-movie": return "Movie"
+        case "music-video": return "Music Video"
+        case "podcast": return "Podcast"
+        case "software": return "App"
+        case "song": return "Song"
+        case "tv-episode": return "TV Episode"
+        default: return kind
+        }
     }
 }
 
@@ -273,7 +291,8 @@ extension SearchViewController: UITableViewDataSource {
             // asignamos los valores que tendrán las views de la celda, y devolvemos la celda.
             let searchResult = searchResults[indexPath.row]
             cell.nameLabel.text = searchResult.name
-            cell.artistNameLabel.text = searchResult.artistName
+            if searchResult.artistName.isEmpty { cell.artistNameLabel.text = "Unknown" }
+            else { cell.artistNameLabel.text = String(format: "%@ (%@)", searchResult.artistName,kindForDisplay( searchResult.kind))}
             return cell
         }
     }
