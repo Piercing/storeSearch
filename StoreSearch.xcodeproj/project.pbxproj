@@ -12,6 +12,10 @@
 		D51A02F820B34B6100125BEF /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D51A02F620B34B6100125BEF /* Main.storyboard */; };
 		D51A02FA20B34B6200125BEF /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D51A02F920B34B6200125BEF /* Assets.xcassets */; };
 		D51A02FD20B34B6200125BEF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D51A02FB20B34B6200125BEF /* LaunchScreen.storyboard */; };
+		D58F925320BC8C00000CE61F /* SearchResultCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = D58F925220BC8C00000CE61F /* SearchResultCell.xib */; };
+		D58F925520BC8F1A000CE61F /* SearchResultCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = D58F925420BC8F1A000CE61F /* SearchResultCell.swift */; };
+		D58F925720BC8F5A000CE61F /* SearchResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = D58F925620BC8F5A000CE61F /* SearchResult.swift */; };
+		D58F925920BC91B9000CE61F /* NothingFoundCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = D58F925820BC91B8000CE61F /* NothingFoundCell.xib */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -22,6 +26,10 @@
 		D51A02F920B34B6200125BEF /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		D51A02FC20B34B6200125BEF /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		D51A02FE20B34B6200125BEF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		D58F925220BC8C00000CE61F /* SearchResultCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = SearchResultCell.xib; sourceTree = "<group>"; };
+		D58F925420BC8F1A000CE61F /* SearchResultCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SearchResultCell.swift; sourceTree = "<group>"; };
+		D58F925620BC8F5A000CE61F /* SearchResult.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SearchResult.swift; sourceTree = "<group>"; };
+		D58F925820BC91B8000CE61F /* NothingFoundCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = NothingFoundCell.xib; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -54,11 +62,15 @@
 		D51A02F120B34B6100125BEF /* StoreSearch */ = {
 			isa = PBXGroup;
 			children = (
-				D51A02F220B34B6100125BEF /* AppDelegate.swift */,
-				D51A02F420B34B6100125BEF /* SearchViewController.swift */,
-				D51A02F620B34B6100125BEF /* Main.storyboard */,
 				D51A02F920B34B6200125BEF /* Assets.xcassets */,
+				D58F925620BC8F5A000CE61F /* SearchResult.swift */,
+				D58F925420BC8F1A000CE61F /* SearchResultCell.swift */,
+				D51A02F420B34B6100125BEF /* SearchViewController.swift */,
+				D51A02F220B34B6100125BEF /* AppDelegate.swift */,
+				D58F925220BC8C00000CE61F /* SearchResultCell.xib */,
+				D51A02F620B34B6100125BEF /* Main.storyboard */,
 				D51A02FB20B34B6200125BEF /* LaunchScreen.storyboard */,
+				D58F925820BC91B8000CE61F /* NothingFoundCell.xib */,
 				D51A02FE20B34B6200125BEF /* Info.plist */,
 			);
 			path = StoreSearch;
@@ -124,6 +136,8 @@
 			files = (
 				D51A02FD20B34B6200125BEF /* LaunchScreen.storyboard in Resources */,
 				D51A02FA20B34B6200125BEF /* Assets.xcassets in Resources */,
+				D58F925320BC8C00000CE61F /* SearchResultCell.xib in Resources */,
+				D58F925920BC91B9000CE61F /* NothingFoundCell.xib in Resources */,
 				D51A02F820B34B6100125BEF /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -136,6 +150,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				D51A02F520B34B6100125BEF /* SearchViewController.swift in Sources */,
+				D58F925520BC8F1A000CE61F /* SearchResultCell.swift in Sources */,
+				D58F925720BC8F5A000CE61F /* SearchResult.swift in Sources */,
 				D51A02F320B34B6100125BEF /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
