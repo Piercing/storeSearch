@@ -117,7 +117,7 @@ func parse(dictionary: [String : Any]) -> [SearchResult] {
     // 1.- Programación defensiva, para asegurarnos que el diccionario tiene
     // una clave denominada  "results" que contiene un  array en su interior.
     guard let array = dictionary["results"] as? [Any] else {
-        print("Expected 'results' array")
+        print("Expected 'results' array'")
         // Si algo va mal, devolvemos un array vacío.
         return []
     }
@@ -137,13 +137,12 @@ func parse(dictionary: [String : Any]) -> [SearchResult] {
             if let wrapperType = resultDict["wrapperType"] as? String {
                 switch wrapperType {
                 case "track": searchResult = parse(track: resultDict)
-                default:
-                    break
+                case "audiobook": searchResult = parse(audiobook: resultDict)
+                case "software": searchResult = parse(software: resultDict)
+                default: break
                 }
-            }
-            if let result = searchResult {
-                searchResutls.append(result)
-            }
+            } else if let kind = resultDict["kind"] as? String, kind == "ebook" { searchResult = parse(ebook: resultDict) }
+            if let result = searchResult { searchResutls.append(result) }
         }
     }
     // Devolvemos un array con objetos searchResult.
@@ -172,9 +171,62 @@ func parse(track dictionary: [String : Any]) -> SearchResult {
     return searchResult
 }
 
+func parse(audiobook dictionary: [String: Any]) -> SearchResult {
+    let searchResult = SearchResult()
+    
+    searchResult.name = dictionary["collectionName"] as! String
+    searchResult.artistName = dictionary["artistName"] as! String
+    searchResult.artworkSmallURL = dictionary["artworkUrl60"] as! String
+    searchResult.artworkLargeURL = dictionary["artworkUrl100"] as! String
+    searchResult.storeURL = dictionary["collectionViewUrl"] as! String
+    // No tiene 'kind' los audioBooks, lo hardcodeamos directamente.
+    searchResult.kind = "audiobook"
+    searchResult.currency = dictionary["currency"] as! String
+    
+    if let price = dictionary["collectionPrice"] as? Double { searchResult.price = price }
+    if let genre = dictionary["primaryGenreName"] as? String {searchResult.genre = genre }
+    
+    return searchResult
+}
+
+func parse(software dictionary: [String: Any]) -> SearchResult {
+    let searchResult = SearchResult()
+    
+    searchResult.name = dictionary["trackName"] as! String
+    searchResult.artistName = dictionary["artistName"] as! String
+    searchResult.artworkSmallURL = dictionary["artworkUrl60"] as! String
+    searchResult.artworkLargeURL = dictionary["artworkUrl100"] as! String
+    searchResult.storeURL = dictionary["trackViewUrl"] as! String
+    searchResult.kind = dictionary["kind"] as! String
+    searchResult.currency = dictionary["currency"] as! String
+    
+    if let price = dictionary["price"] as? Double { searchResult.price = price }
+    if let genre = dictionary["primaryGenreName"] as? String { searchResult.genre = genre }
+    return searchResult
+}
+
+func parse(ebook dictionary: [String: Any]) -> SearchResult {
+    let searchResult = SearchResult()
+    
+    searchResult.name = dictionary["trackName"] as! String
+    searchResult.artistName = dictionary["artistName"] as! String
+    searchResult.artworkSmallURL = dictionary["artworkUrl60"] as! String
+    searchResult.artworkLargeURL = dictionary["artworkUrl100"] as! String
+    searchResult.storeURL = dictionary["trackViewUrl"] as! String
+    searchResult.kind = dictionary["kind"] as! String
+    searchResult.currency = dictionary["currency"] as! String
+    
+    if let price = dictionary["price"] as? Double { searchResult.price = price }
+    
+    // Los  audioBooks no tienen un campo  "primaryGenreName", pero sí una gran  variedad de genres.
+    // Utilizamos el método 'joined(separator)' para unir estos nombres de género en un solo String.
+    if let genres: Any = dictionary["genres"] { searchResult.genre = (genres as! [String]).joined(separator: ", ") }
+    return searchResult
+}
+
 // MARK: Extensions
 
-// Extendemos el controlador para crear una función que mostrará el error producido en caso de que algo falle.
+//-- Extendemos el controlador para crear una función que mostrará el error producido en caso de que algo falle.
 extension SearchViewController {
     public func showNetWorkError(_ title:String, _ message:String) {
         let alertVC = UIAlertController(title: title, message: message, preferredStyle: .alert)
@@ -209,11 +261,13 @@ extension SearchViewController: UISearchBarDelegate {
             // devuelve un objeto String que contiene los datos JSON que estamos buscando.
             if let jsonString = performStoreRequest(url: url) {
                 // Parseamos los datos obtenidos a un diccionario --> par: key-value.
-                if let jsonDictionary = parse(json: jsonString) {
+                if let jsonDictionary = StoreSearch.parse(json: jsonString) {
                     print("Dictionary \(jsonDictionary)")
                     // Llamamos la siguiente método para parsear los datos recibidos y se los asignamos a la variable
                     // de instancia de la tableView para que  pueda mostrar los objetos obtenidos en la búsqueda real.
-                    searchResults = parse(dictionary: jsonDictionary)
+                    searchResults = StoreSearch.parse(dictionary: jsonDictionary)
+                    // Ordenamos el array por nombre ascendente. Esta línea dice: "Clasificar el array en orden descendente".
+                    searchResults.sort (by: <)
                     // Recargamos la tabla. Update.
                     tableView.reloadData()
                     return
@@ -292,7 +346,7 @@ extension SearchViewController: UITableViewDataSource {
             let searchResult = searchResults[indexPath.row]
             cell.nameLabel.text = searchResult.name
             if searchResult.artistName.isEmpty { cell.artistNameLabel.text = "Unknown" }
-            else { cell.artistNameLabel.text = String(format: "%@ (%@)", searchResult.artistName,kindForDisplay( searchResult.kind))}
+            else { cell.artistNameLabel.text = String(format: "%@ (%@)", searchResult.artistName, kindForDisplay( searchResult.kind))}
             return cell
         }
     }

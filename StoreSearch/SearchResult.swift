@@ -20,3 +20,11 @@ class SearchResult {
     var price = 0.0
     var genre = ""
 }
+
+// Creamos una función llamada '<' que contiene el mismo código que hacemos
+// en el método 'sort' en 'SearchViewController' en su closure de cierre.
+// Esta vez los dos 'SearchResult' de búsqueda se denominan 'lhs' y 'rhs'
+// para el lado izquierdo y derecho, respectivamente. Lo utilizamos en 'SearchViewController'.
+func < (lhs:SearchResult, rhs: SearchResult) -> Bool {
+    return lhs.artistName.localizedStandardCompare(rhs.artistName) == .orderedAscending
+}
