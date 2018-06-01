@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		84E648B320C039A6003F554E /* LoadingCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 84E648B220C039A6003F554E /* LoadingCell.xib */; };
 		D51A02F320B34B6100125BEF /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D51A02F220B34B6100125BEF /* AppDelegate.swift */; };
 		D51A02F520B34B6100125BEF /* SearchViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D51A02F420B34B6100125BEF /* SearchViewController.swift */; };
 		D51A02F820B34B6100125BEF /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D51A02F620B34B6100125BEF /* Main.storyboard */; };
@@ -19,6 +20,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		84E648B220C039A6003F554E /* LoadingCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = LoadingCell.xib; sourceTree = "<group>"; };
 		D51A02EF20B34B6100125BEF /* StoreSearch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = StoreSearch.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D51A02F220B34B6100125BEF /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		D51A02F420B34B6100125BEF /* SearchViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchViewController.swift; sourceTree = "<group>"; };
@@ -71,6 +73,7 @@
 				D51A02F620B34B6100125BEF /* Main.storyboard */,
 				D51A02FB20B34B6200125BEF /* LaunchScreen.storyboard */,
 				D58F925820BC91B8000CE61F /* NothingFoundCell.xib */,
+				84E648B220C039A6003F554E /* LoadingCell.xib */,
 				D51A02FE20B34B6200125BEF /* Info.plist */,
 			);
 			path = StoreSearch;
@@ -136,6 +139,7 @@
 			files = (
 				D51A02FD20B34B6200125BEF /* LaunchScreen.storyboard in Resources */,
 				D51A02FA20B34B6200125BEF /* Assets.xcassets in Resources */,
+				84E648B320C039A6003F554E /* LoadingCell.xib in Resources */,
 				D58F925320BC8C00000CE61F /* SearchResultCell.xib in Resources */,
 				D58F925920BC91B9000CE61F /* NothingFoundCell.xib in Resources */,
 				D51A02F820B34B6100125BEF /* Main.storyboard in Resources */,
