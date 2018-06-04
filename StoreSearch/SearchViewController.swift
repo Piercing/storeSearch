@@ -18,7 +18,12 @@ class SearchViewController: UIViewController {
     @IBOutlet weak var tableView: UITableView!
     
     // Variables globales/instancia.
+    
+    
     var searchResults: [SearchResult] = []
+    // Es opcional, ya que no tendremos un dataTask,
+    // hasta que el usuario haga una búsqueda --> ?.
+    var dataTask: URLSessionDataTask?
     var hasSearched = false
     var isLoading = false
     
@@ -69,46 +74,28 @@ class SearchViewController: UIViewController {
     // Función que devuelve un objeto URL válido.
     func iTunesURL(searchText: String) -> URL {
         
-        // Escapamos los espacios en blanco entre los Strings de entrada en
-        //  la searchBar, codifica en UTF-8 que casi siempre va a funcionar.😎
+        // Escapamos los espacios en  blanco entre los Strings de entrada en
+        // la searchBar, codifica en 'UTF-8' que casi siempre va a funcionar.
         let escapeSearchText = searchText.addingPercentEncoding(withAllowedCharacters: CharacterSet.urlQueryAllowed)!
         
         // Recibimos en el parámetro el texto a buscar que se adjunta al final de la url dada.
         let urlString = String(format: "https://itunes.apple.com/search?term=%@&limit=200", escapeSearchText)
         let url = URL(string: urlString)
         // Como URL(String) es uno de los inicializadores 'failable',
-        // devuleve un opcional, de ahí que lo desempaquetemos.
+        // devuleve un opcional '?',  de ahí que lo desempaquetemos.
         return url!
     }
     
-    // Función que devuelve un nuevo objeto String con los datos que recibe del servidor.
-    // Le decimos a la aplicación que interprete los datos como texto UTF-8. Es importante
-    // que los datos que enviemos y recibamos del servidor estén de acuerdo en la codificación.
-    func performStoreRequest(url: URL) -> String? {
-        do {
-            return try String(contentsOf: url, encoding: .utf8)
-        } catch {
-            print("Download Error: \(error)")
-            return nil
-        }
-    }
-    
-    //func showNetWorkError() {
-    //    let alert = UIAlertController(title: "Whoosp", message: "There was an error reading from the iTunes Store. Please try again", preferredStyle: .alert)
-    //    let action = UIAlertAction(title: "OK", style: .default, handler: nil)
-    //    alert.addAction(action)
-    //    present(alert, animated: true, completion: nil)
-    //}
     
     // MARK: ParseJSON
     
     // Función que convierte los Strings de búsqueda en un diccionario de objetos JSON y los devuelve.
-    func parse(json: String) -> [String : Any]? {
+    func parse(json data: Data) -> [String : Any]? {
         
-        // Utilizamos un guard por si los datos no se pueden codificar en UTF-8.
-        guard let data = json.data(using: .utf8, allowLossyConversion: false)
-            else { return nil }
         do {
+            // En el objeto data ya tenemos el texto JSON.
+            // Los serializamos, covirtiéndolos en Objetos Foundation.
+            // En este caso en un diccionario, de par clave-valor String:Any.
             return  try JSONSerialization.jsonObject(with: data, options: []) as? [String : Any]
         } catch  {
             print("JSON Error: \(error)")
@@ -265,56 +252,92 @@ extension SearchViewController: UISearchBarDelegate {
     // Función que se llama al pulsar el botón "Buscar/Search" del dispositivo.
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
         
-        // Si la searchBar contiene datos para la búsquda...
         if !searchBar.text!.isEmpty {
-            // Hacemos que el teclado se oculte al pulsar el botón "Buscar" del dispositivo.
+            
             searchBar.resignFirstResponder()
             
-            // Una vez el usuario pulsa el botón 'Search' activamos el espiner --> isLoading = true.
+            // Cada vez que el usuario pulsa el botón 'search' hacemos primero que
+            // que la tarea sea cancela por si hubiera alguna búsqueda aún activa.
+            // Gracias al encadenamiento opcional, si alguna búsqueda aún no ha
+            // terminado, 'dataTask' será todavía 'nil'; esto simplemente ignora
+            // la llamada a 'cancel()'. Podíamos haberlo hecho también con if-let.
+            // Si ponemos '!' y el opcional es 'nil' se bloqueará la aplicación,
+            // dado que cuando la primera vez que el usuario escribe algo en la
+            // searchBar, 'dataTask' aún será 'nil' por lo que se caería la app.
+            dataTask?.cancel()
+            
             isLoading = true
-            // Recargamos de nuevo la tabla para mostrar el spinner.
             tableView.reloadData()
             
-            // Aquí ya existe una primera búsqueda. Flag a true para que nos permita
-            // mostrar las filas correspondientes dentro del método "numberOfRowsInSection".
             hasSearched = true
-            // Array para almacenar los datos devueltos por la búsqueda.
             searchResults = []
             
-            // 1.- Obtenemos una referencia a la cola global, la que proporciona el sistema.
-            let queue = DispatchQueue.global()
+            // --- *** IMPLEMENTAMOS URLSESSION *** --- //
             
-            // Pasamos el texto introducido en la searchBar para formar la URL final de búsqueda en iTunes.
-            let url = self.iTunesURL(searchText: searchBar.text!)
-            
-            // 2.- Creamos el CLOSURE que se ejecuta de forma asíncrona. Después
-            // de éste, el "SO" pasa al hilo principal y ya no se bloquea la app.
-            queue.async { // ***** ESTO ES EL CLOSURE ***** //
-                
-               
-                // Invocamos a performStoreRequest() con el objeto URL como parámetro y devuelve
-                // los datos JSON que recibe desde el servidor. Si todo va bien, este método
-                // devuelve un objeto String que contiene los datos JSON que estamos buscando.
-                if let jsonString = self.performStoreRequest(url: url) {
-                    // Parseamos los datos obtenidos a un diccionario --> par: key-value.
-                    if let jsonDictionary = self.parse(json: jsonString) {
-                        print("Dictionary \(jsonDictionary)")
-                        // Llamamos la siguiente método para parsear los datos recibidos y se los asignamos a la variable
-                        // de instancia de la tableView para que  pueda mostrar los objetos obtenidos en la búsqueda real.
+            // 1.- Creamos el objeto URL añadiéndole el texto de búsqueda.
+            let url = iTunesURL(searchText: searchBar.text!)
+            // 2.- Obtenemos el objeto URLSession, mediante la sesión compartida,
+            // utilizando una configuración predeterminada con respecto al alma-
+            // cenamiento en caché, cookies, y otras cosas web. Podemos crear
+            // nuestra propia configuración, creando nuestros propios objetos
+            // URLSessionConfiguration y URLSession.
+            let session = URLSession.shared
+            // 3.- Crear la tarea  de datos, 'dataTask', para  enviar  solicitudes
+            // HTTPS GET al servidor, pasándole la url, y un closure, el cual será
+            // invocado  cuando la  tarea haya recibido la  respuesta del servidor.
+            dataTask = session.dataTask(with: url, completionHandler: {
+                data, response, error in
+                // 4.- En el interior del closure tenemos tres parámetros, todos opcionales para
+                // que puedan estar a nil, y tienen que desempaquetarse antes de ser utilizados.
+                // Error, contine el error, no conecta con el server, no hay red, o fallo de hard.
+                // Si error es nil, la comunicación con el server fue exitosa. Response, contine
+                // códio y cabeceras de la respuesta del server. Y data, contine los datos reales
+                // que nos envía el server, en este caso en formato JSON.
+                if let error = error as NSError?, error.code == -999 {
+                    print("Failure! \(error)")
+                    return // Cancelamos la búsqueda con 'return', el resto del closure se omite.
+                    
+                    
+                } else if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 {
+                    
+                    // Desenvolvemos el objeto data opcional, lo parseamos, y
+                    // lo pasamos para parsearlo convirtiédolo en un diccionario.
+                    if let data = data, let jsonDictionary = self.parse(json: data) {
+                        // Aquí lo convertimos el contenido del diccionario en un objeto serchResults.
                         self.searchResults = self.parse(dictionary: jsonDictionary)
-                        // Ordenamos el array por nombre ascendente. Esta línea dice: "Clasificar el array en orden descendente".
-                        self.searchResults.sort (by: <)
+                        // Por último lo ordenamos.
+                        self.searchResults.sort(by: <)
                         
-                        // 3.- Pasamos a al hilo/cola principal, ya que UIKit no permite mostrar la UI en segundo plano,
+                        // Actualizamos la tabla con los datos nuevos,
+                        // paramos el spinner. Todo en el hilo principal.
                         DispatchQueue.main.async {
                             self.isLoading = false
                             self.tableView.reloadData()
                         }
+                        // Salimos.
                         return
+                        
+                    } // --- *** FIN URLSESSION --- *** //
+                    
+                    // Ponemos este código aquí por si algo ha ido mal, avisando al usuario de que algo ha ido mal.
+                    // Actualizamos la tabla antes, ya que la vista de la tabla necesita ser renovada para deshacerse
+                    // del 'Loading...' y todo en el hilo principal.
+                    DispatchQueue.main.async {
+                        self.hasSearched = false
+                        self.isLoading = false
+                        self.tableView.reloadData()
+                        self.showNetWorkError("Whoops", "There was an error reading from the iTunes Store. Please try again.")
                     }
+                    
+                } else {
+                    print("Success! \(response!)")
                 }
-                DispatchQueue.main.async { self.showNetWorkError("Whoops...", "There was an error reading from the iTunes Store. Please try again.") }
-            }// ***** FIN CLOSURE ***** //
+            })
+            
+            // 5.- Una vez creada la tarea de datos, llamar al método 'resume()' para inicializar el proceso,
+            // enviando una solicitud al server. Todo sucede en un subproceso en segundo plano, por lo que la
+            // aplicación es liberada inmediatamente para continuar (URLSession es asíncrona).
+            dataTask?.resume()
         }
     }
     
