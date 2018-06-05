@@ -16,6 +16,7 @@ class SearchViewController: UIViewController {
     // IBOutlets para la searchBar y la tableView.
     @IBOutlet weak var searchBar: UISearchBar!
     @IBOutlet weak var tableView: UITableView!
+    @IBOutlet weak var segmentControl: UISegmentedControl!
     
     // Variables globales/instancia.
     
@@ -42,9 +43,10 @@ class SearchViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        // Configuramos las dimensiones de la tabla, dejamos 64 puntos de espacio en la
-        // parte superior, para que pueda albergar correctamente la searchBar y la status Bar.
-        tableView.contentInset = UIEdgeInsets(top: 64, left: 0, bottom: 0, right: 0)
+        // Configuramos las  dimensiones de la tabla, dejamos 108 puntos de espacio
+        // en la parte superior, para que pueda albergar correctamente la searchBar
+        // y la status Bar y la barra de navegación para el UISegment.
+        tableView.contentInset = UIEdgeInsets(top: 108, left: 0, bottom: 0, right: 0)
         
         // Registramos las celdas que se van a utilizar/reutilizar.
         var cellNib = UINib(nibName: TableViewCellIdentifiers.searchResultCell, bundle: nil)
@@ -72,20 +74,37 @@ class SearchViewController: UIViewController {
     // MARK: NetWork
     
     // Función que devuelve un objeto URL válido.
-    func iTunesURL(searchText: String) -> URL {
+    func iTunesURL(searchText: String, category: Int) -> URL {
+        
+        let entityName: String
+        
+        switch category {
+        case 1:  entityName = "musicTrack"
+        case 2:  entityName = "software"
+        case 3:  entityName = "ebook"
+        default: entityName = ""
+            
+        }
         
         // Escapamos los espacios en  blanco entre los Strings de entrada en
         // la searchBar, codifica en 'UTF-8' que casi siempre va a funcionar.
         let escapeSearchText = searchText.addingPercentEncoding(withAllowedCharacters: CharacterSet.urlQueryAllowed)!
         
-        // Recibimos en el parámetro el texto a buscar que se adjunta al final de la url dada.
-        let urlString = String(format: "https://itunes.apple.com/search?term=%@&limit=200", escapeSearchText)
+        // Recibimos en el parámetro el texto a buscar que se adjunta al final
+        //  de la url dada y el índice de la categoría (books, software, etc).
+        let urlString = String(format: "https://itunes.apple.com/search?term=%@&limit=200&entity=%@", escapeSearchText, entityName)
         let url = URL(string: urlString)
         // Como URL(String) es uno de los inicializadores 'failable',
         // devuleve un opcional '?',  de ahí que lo desempaquetemos.
         return url!
     }
     
+    // MARK: Actions
+    
+    @IBAction func segmentChanged(_ sender: UISegmentedControl) {
+       performSearch()
+    }
+
     
     // MARK: ParseJSON
     
@@ -219,21 +238,28 @@ class SearchViewController: UIViewController {
     // MARK: Others
     
     func kindForDisplay(_ kind: String) -> String {
+        
         switch kind {
-        case "album": return "Album"
-        case "audiobook": return "Audio Book"
-        case "book": return "Book"
-        case "ebook": return "E-Book"
-        case "feature-movie": return "Movie"
-        case "music-video": return "Music Video"
-        case "podcast": return "Podcast"
-        case "software": return "App"
         case "song": return "Song"
+        case "book": return "Book"
+        case "album": return "Album"
+        case "ebook": return "E-Book"
+        case "software": return "App"
+        case "podcast": return "Podcast"
+        case "feature-movie": return "Movie"
+        case "audiobook": return "Audio Book"
         case "tv-episode": return "TV Episode"
+        case "music-video": return "Music Video"
         default: return kind
         }
     }
+    
+    // Función propia de UISearchBar, se llamma al pulsar el botón 'search/buscar'
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        performSearch()
+    }
 }
+
 // MARK: Extensions
 
 //-- Extendemos el controlador para crear una función que mostrará el error producido en caso de que algo falle.
@@ -250,7 +276,7 @@ extension SearchViewController {
 extension SearchViewController: UISearchBarDelegate {
     
     // Función que se llama al pulsar el botón "Buscar/Search" del dispositivo.
-    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+    func performSearch() {
         
         if !searchBar.text!.isEmpty {
             
@@ -274,8 +300,8 @@ extension SearchViewController: UISearchBarDelegate {
             
             // --- *** IMPLEMENTAMOS URLSESSION *** --- //
             
-            // 1.- Creamos el objeto URL añadiéndole el texto de búsqueda.
-            let url = iTunesURL(searchText: searchBar.text!)
+            // 1.- Creamos el objeto URL añadiéndole el texto de búsqueda y el índice seleccionado del segment Control.
+            let url = iTunesURL(searchText: searchBar.text!, category: segmentControl.selectedSegmentIndex)
             // 2.- Obtenemos el objeto URLSession, mediante la sesión compartida,
             // utilizando una configuración predeterminada con respecto al alma-
             // cenamiento en caché, cookies, y otras cosas web. Podemos crear
