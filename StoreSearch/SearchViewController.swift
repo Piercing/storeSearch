@@ -235,24 +235,7 @@ class SearchViewController: UIViewController {
         return searchResult
     }
     
-    // MARK: Others
-    
-    func kindForDisplay(_ kind: String) -> String {
-        
-        switch kind {
-        case "song": return "Song"
-        case "book": return "Book"
-        case "album": return "Album"
-        case "ebook": return "E-Book"
-        case "software": return "App"
-        case "podcast": return "Podcast"
-        case "feature-movie": return "Movie"
-        case "audiobook": return "Audio Book"
-        case "tv-episode": return "TV Episode"
-        case "music-video": return "Music Video"
-        default: return kind
-        }
-    }
+    // MARK: UISearchBar
     
     // Función propia de UISearchBar, se llamma al pulsar el botón 'search/buscar'
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
@@ -418,18 +401,17 @@ extension SearchViewController: UITableViewDataSource {
             // Devuleve la celda con el identificador de la celda "nada encontrado".
             return tableView.dequeueReusableCell(withIdentifier: TableViewCellIdentifiers.nothingFoundCell, for: indexPath)
             
-            // Por contrario, si hay resultados...
-        } else {
+        } else { // Por contrario, si hay resultados...
             
-            // Creamos la celda ha reutilizar, con el identificador de esta y de tipo "SearchResultCell".
+            // Creamos la celda ha reutilizar, con el identificador de ésta y de tipo "SearchResultCell".
             let cell = tableView.dequeueReusableCell(withIdentifier: TableViewCellIdentifiers.searchResultCell, for: indexPath) as! SearchResultCell
             
-            // Almacenamos el resultado para el "indexpath" de la fila correspondiente, y
+            // Almacenamos el resultado para el "indexpath" de la fila/row correspondiente, y
             // asignamos los valores que tendrán las views de la celda, y devolvemos la celda.
             let searchResult = searchResults[indexPath.row]
-            cell.nameLabel.text = searchResult.name
-            if searchResult.artistName.isEmpty { cell.artistNameLabel.text = "Unknown" }
-            else { cell.artistNameLabel.text = String(format: "%@ (%@)", searchResult.artistName, kindForDisplay( searchResult.kind))}
+            
+            // Llamamos al método configure de la clase SearchResultCell.
+            cell.configure(for: searchResult)
             return cell
         }
     }
