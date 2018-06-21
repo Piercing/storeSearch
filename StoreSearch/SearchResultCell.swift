@@ -62,7 +62,7 @@ class SearchResultCell: UITableViewCell {
         
         // Esto le dice a UIImageView que cargue la imagen de 'artworkSmallURL' y la coloque en la image view de la
         // celda. Mientras la imagen real 'artwork' se descarga la image view muestra una imagen tipo 'placeholder'.
-        // El objeto URLSessionDownloadTask devuelto por 'loadImage(url)' se coloca en una nueva variable de instancia
+        // El objeto URLSessionDownloadTask devuelto por loadImage(url) se coloca en una nueva variable de instancia
         // 'downloadTask'.
         artworkImageView.image = UIImage(named: "Placeholder")
         if let smallURL = URL(string: searchResult.artworkSmallURL) {

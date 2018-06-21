@@ -265,26 +265,24 @@ extension SearchViewController: UISearchBarDelegate {
             
             searchBar.resignFirstResponder()
             
-            // Cada vez que el usuario pulsa el botón 'search' hacemos primero que
-            // que la tarea sea cancela por si hubiera alguna búsqueda aún activa.
-            // Gracias al encadenamiento opcional, si alguna búsqueda aún no ha
-            // terminado, 'dataTask' será todavía 'nil'; esto simplemente ignora
-            // la llamada a 'cancel()'. Podíamos haberlo hecho también con if-let.
-            // Si ponemos '!' y el opcional es 'nil' se bloqueará la aplicación,
-            // dado que cuando la primera vez que el usuario escribe algo en la
-            // searchBar, 'dataTask' aún será 'nil' por lo que se caería la app.
+            // Cada vez que el usuario pulsa el botón 'search' hacemos primero que la tarea sea cancela por si hubiera alguna búsqueda aún activa.
+            // Gracias al encadenamiento opcional, si alguna búsqueda aún no ha  terminado, 'dataTask' será todavía 'nil'; esto simplemente ignora
+            // la llamada a 'cancel()'. Podíamos haberlo hecho también con if-let. Si ponemos '!' y el opcional es 'nil' se bloqueará la aplicación,
+            // dado que cuando la primera vez que el usuario escribe algo en la searchBar, 'dataTask' aún será 'nil' por lo que se caería la app.
             dataTask?.cancel()
             
+            // Activamos el activity indicator y refrescamos la tabla.
             isLoading = true
             tableView.reloadData()
             
+            // Aquí ya se realiza búsqueda, por tanto a true.
             hasSearched = true
             searchResults = []
             
             // --- *** IMPLEMENTAMOS URLSESSION *** --- //
             
             // 1.- Creamos el objeto URL añadiéndole el texto de búsqueda y el índice seleccionado del segment Control.
-            let url = iTunesURL(searchText: searchBar.text!, category: segmentControl.selectedSegmentIndex)
+            let url = self.iTunesURL(searchText: searchBar.text!, category: segmentControl.selectedSegmentIndex)
             // 2.- Obtenemos el objeto URLSession, mediante la sesión compartida,
             // utilizando una configuración predeterminada con respecto al alma-
             // cenamiento en caché, cookies, y otras cosas web. Podemos crear
@@ -309,8 +307,8 @@ extension SearchViewController: UISearchBarDelegate {
                     
                 } else if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 {
                     
-                    // Desenvolvemos el objeto data opcional, lo parseamos, y
-                    // lo pasamos para parsearlo convirtiédolo en un diccionario.
+                    // Desenvolvemos el objeto data opcional, lo parseamos, y lo
+                    // pasamos  para parsearlo convirtiéndolo  en un diccionario.
                     if let data = data, let jsonDictionary = self.parse(json: data) {
                         // Aquí lo convertimos el contenido del diccionario en un objeto serchResults.
                         self.searchResults = self.parse(dictionary: jsonDictionary)
