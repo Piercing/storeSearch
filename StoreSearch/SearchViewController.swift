@@ -241,6 +241,18 @@ class SearchViewController: UIViewController {
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
         performSearch()
     }
+    
+    // MARK: Segue
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == "ShowDetail" {
+            let detailViewController = segue.destination as! DetailViewController
+            let indexPath = sender as! IndexPath
+            let searchResult = searchResults[indexPath.row]
+            detailViewController.searchResult = searchResult
+        }
+    }
+    
 }
 
 // MARK: Extensions
@@ -423,15 +435,18 @@ extension SearchViewController: UITableViewDelegate {
     //-- Funciones requeridas por el Delegado.
     
     // Función para la celda que se ha seleccionado.
-    func tableView(_ tableView: UITableView,didSelectRowAt indexPath: IndexPath) {
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         
         // Omitir el resaltado de la celda al ser deseleccionada.
         tableView.deselectRow(at: indexPath, animated: true)
+        
+        //
+        performSegue(withIdentifier: "ShowDetail", sender: indexPath)
     }
     
     // Se llama a este método antes de que el usuario cambie la selección de fila,
     // devolviendo un nuevo indexpath, o nil, para cambiar la selección propuesta.
-    func tableView(_ tableView: UITableView,  willSelectRowAt indexPath: IndexPath) -> IndexPath? {
+    func tableView(_ tableView: UITableView, willSelectRowAt indexPath: IndexPath) -> IndexPath? {
         
         // Si no hay resultados, devuelve nil, de lo contrario, devuelve el nuevo indexpath seleccionado.
         if searchResults.count == 0 || isLoading {
@@ -441,4 +456,33 @@ extension SearchViewController: UITableViewDelegate {
         }
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
