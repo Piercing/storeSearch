@@ -100,9 +100,11 @@
                                             <action selector="close" destination="h2I-ey-yRa" eventType="touchUpInside" id="QKI-dR-8OP"/>
                                         </connections>
                                     </button>
-                                    <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Eeg-XZ-fKu">
-                                        <rect key="frame" x="168" y="212" width="68" height="24"/>
-                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Eeg-XZ-fKu">
+                                        <rect key="frame" x="175" y="210" width="59" height="24"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="24" id="RMT-cH-wX9"/>
+                                        </constraints>
                                         <fontDescription key="fontDescription" type="boldSystem" pointSize="20"/>
                                         <state key="normal" title="$9.99" backgroundImage="PriceButton"/>
                                     </button>
@@ -148,15 +150,18 @@
                                         <nil key="textColor"/>
                                         <nil key="highlightedColor"/>
                                     </label>
-                                    <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="WjM-92-ucT">
+                                    <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" image="Placeholder" translatesAutoresizingMaskIntoConstraints="NO" id="WjM-92-ucT">
                                         <rect key="frame" x="70" y="9" width="100" height="100"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                     </imageView>
                                 </subviews>
                                 <color key="backgroundColor" red="1" green="1" blue="1" alpha="0.94982081422018338" colorSpace="custom" customColorSpace="sRGB"/>
                                 <constraints>
+                                    <constraint firstItem="Eeg-XZ-fKu" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="fGS-BJ-4SF" secondAttribute="leading" constant="20" symbolic="YES" id="0h9-Jo-oHc"/>
                                     <constraint firstAttribute="height" constant="240" id="CLU-xC-D0m"/>
+                                    <constraint firstAttribute="trailing" secondItem="Eeg-XZ-fKu" secondAttribute="trailing" constant="6" id="cjz-YW-j7N"/>
                                     <constraint firstAttribute="width" constant="240" id="etZ-7d-uLe"/>
+                                    <constraint firstAttribute="bottom" secondItem="Eeg-XZ-fKu" secondAttribute="bottom" constant="6" id="tAg-Sb-CZk"/>
                                 </constraints>
                             </view>
                         </subviews>
@@ -165,7 +170,7 @@
                             <constraint firstItem="fGS-BJ-4SF" firstAttribute="centerY" secondItem="F5K-Zs-pSD" secondAttribute="centerY" id="AK5-al-8WE"/>
                             <constraint firstItem="fGS-BJ-4SF" firstAttribute="centerX" secondItem="F5K-Zs-pSD" secondAttribute="centerX" id="Bu5-js-3de"/>
                         </constraints>
-                        <viewLayoutGuide key="safeArea" id="ac5-m5-ybz"/>
+                        <viewLayoutGuide key="safeArea" id="2Cc-4O-iyw"/>
                     </view>
                     <connections>
                         <outlet property="artistNameLabel" destination="DDp-Qq-ul2" id="RzH-xN-yp3"/>
@@ -184,6 +189,7 @@
     </scenes>
     <resources>
         <image name="CloseButton" width="15" height="15"/>
+        <image name="Placeholder" width="60" height="60"/>
         <image name="PriceButton" width="11" height="24"/>
     </resources>
 </document>

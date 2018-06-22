@@ -38,7 +38,7 @@ class SearchResultCell: UITableViewCell {
     // MARK: Cells
     
     // Este método cancela cualquier descarga
-    // de imagen que aún está en progreso.
+    // de imágenes que aún  estén en progreso.
     override func prepareForReuse() {
         super.prepareForReuse()
         

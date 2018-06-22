@@ -23,7 +23,7 @@ class SearchResult {
     // MARK: Others
     
     func kindForDisplay() -> String {
-        switch kind {
+        switch kind { // 'kind' --> propiedad miembro de 'SearchResult'
         case "album": return "Album"
         case "audiobook": return "Audio Book"
         case "book": return "Book"

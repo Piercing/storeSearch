@@ -31,6 +31,8 @@ class DetailViewController: UIViewController {
         transitioningDelegate = self
     }
 
+      // MARK: - Lifecycle
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -48,6 +50,7 @@ class DetailViewController: UIViewController {
         gestureRecognizer.delegate = self
         view.addGestureRecognizer(gestureRecognizer)
         
+         // Si hay resultados, actualizamos la UI
         if let _ = searchResult  {
             updateUI()
         }
@@ -61,6 +64,7 @@ class DetailViewController: UIViewController {
     // MARK: - UI
     
     func updateUI() {
+
         nameLabel.text = searchResult.name
         
         if searchResult.artistName.isEmpty {
@@ -69,6 +73,23 @@ class DetailViewController: UIViewController {
         
         kindLabel.text = searchResult.kindForDisplay()
         genreLabel.text = searchResult.genre
+        
+        
+        // Formateamos el precio para el tipo de moneda '€', '$', etc.
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .currency
+        formatter.currencyCode = searchResult.currency
+        
+        let priceText: String
+        if searchResult.price == 0 {
+            priceText = "Free"
+        } else if let text = formatter.string(from: searchResult.price as NSNumber) {
+            priceText = text
+        } else {
+            priceText = ""
+        }
+        
+        priceButton.setTitle(priceText, for: .normal)
     }
     
     // MARK: - Actions
@@ -79,8 +100,10 @@ class DetailViewController: UIViewController {
 }
 
 
+  // MARK: - Extensions
+
 // Los métodos de este protocolo delegado de UIKit dicen qué objetos se deben utilizar para realizar la transición al controlador de la vista Detalle.
-// Utilizaremos ahora nuestro nuevo controlador, la clase DimmingPresentationController en lugar del controlador de presentación estándar.
+// Utilizaremos ahora nuestro nuevo controlador, la clase "DimmingPresentationController" en lugar del controlador de presentación estándar.
 extension DetailViewController: UIViewControllerTransitioningDelegate {
     
     func presentationController(forPresented presented: UIViewController, presenting: UIViewController?, source: UIViewController) -> UIPresentationController? {
