@@ -20,6 +20,7 @@ class DetailViewController: UIViewController {
     
     
     var searchResult: SearchResult!
+    var downloadTask: URLSessionDownloadTask?
     
     // Este init se invoca  para cargar el controlador de la vista del storyboard.
     // Aquí UIKit  dice que este  controlador de vista utilizará  una presentación
@@ -29,6 +30,13 @@ class DetailViewController: UIViewController {
         super.init(coder: aDecoder)
         modalPresentationStyle = .custom
         transitioningDelegate = self
+    }
+    
+    // Es buena idea cancelar la  descarga de la imagen si el usuario cierra
+    // cierra la ventana emergente antes de que la imagen se haya descargado
+    deinit {
+        print("deinit \(self)")
+        downloadTask?.cancel()
     }
 
       // MARK: - Lifecycle
@@ -45,7 +53,6 @@ class DetailViewController: UIViewController {
         // Creamos un 'gesture recognizer' que escucha los toques en cualquier lugar
         // en este controlador de vista y que llama al método 'close()' en respuesta.
         let gestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(close))
-        
         gestureRecognizer.cancelsTouchesInView = false
         gestureRecognizer.delegate = self
         view.addGestureRecognizer(gestureRecognizer)
@@ -90,6 +97,10 @@ class DetailViewController: UIViewController {
         }
         
         priceButton.setTitle(priceText, for: .normal)
+        
+        if let largeURL = URL(string: searchResult.artworkLargeURL) {
+            downloadTask = artworkImageView.loadImage(url: largeURL)
+        }
     }
     
     // MARK: - Actions
@@ -97,30 +108,49 @@ class DetailViewController: UIViewController {
     @IBAction func close() {
         dismiss(animated: true, completion: nil)
     }
+    
+    
+    // El servicio web devuelve una URL a la página del producto. Sólo tenemos que decirle al objeto UIApplication
+    // que abra dicha  dirección URL. iOS ahora se dará cuenta  de qué tipo de es y lanzará la aplicación adecuada.
+    @IBAction func openInStore() {
+        if let url = URL(string: searchResult.storeURL) {
+            
+            // UIApplication  maneja toda la funcionalidad  de cualquier aplicación.
+            // Se usa especialmente para la apertura de URLs. Casi siempre se ocupa
+            // el  AppDelegate, que  como dice su nombre, es  el delegado de la app.
+            UIApplication.shared.open(url, options: [:], completionHandler: nil)
+        }
+    }
 }
 
 
   // MARK: - Extensions
 
-// Los métodos de este protocolo delegado de UIKit dicen qué objetos se deben utilizar para realizar la transición al controlador de la vista Detalle.
+// Los métodos de este protocolo delegado de UIKit dicen qué objetos se deben utilizar para realizar la transición al controlador de detailView.
 // Utilizaremos ahora nuestro nuevo controlador, la clase "DimmingPresentationController" en lugar del controlador de presentación estándar.
 extension DetailViewController: UIViewControllerTransitioningDelegate {
-    
-    func presentationController(forPresented presented: UIViewController, presenting: UIViewController?, source: UIViewController) -> UIPresentationController? {
+    func presentationControllerForPresentedViewController(presented: UIViewController, presentingViewController presenting: UIViewController, sourceViewController source: UIViewController) -> UIPresentationController? {
         return DimmingPresentationController(presentedViewController: presented, presenting: presenting)
     }
+    
+//    func animationControllerForPresentedController(presented: UIViewController, presentingController presenting: UIViewController, sourceController source: UIViewController) -> UIViewControllerAnimatedTransitioning? {
+//        return BounceAnimationController()
+//    }
+//    
+//    func animationControllerForDismissedController(dismissed: UIViewController) -> UIViewControllerAnimatedTransitioning? {
+//        return SlideOutAnimationController()
+//    }
 }
 
 
 // Con esta extesión delegado podemos cerrar la ventana de detalle con solo tocar fuera de ella en la pantalla.
-// Cualquier otro toque-tap debe ser ignorado. Devuelve true cuando se toca en la pantalla fuera de la ventana
+// Cualquier otro toque/tap debe ser ignorado. Devuelve true cuando se toca en la pantalla fuera de la ventana
 // pop-up y falso si tocamos o hacemos tap dentro de la ventana modal del pop-up.
 extension DetailViewController: UIGestureRecognizerDelegate {
-    func gestureRecognizer(_gestureReconignizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
+    private func gestureRecognizer(gestureRecognizer: UIGestureRecognizer, shouldReceiveTouch touch: UITouch) -> Bool {
         return (touch.view === self.view)
     }
 }
-
 
 
 
