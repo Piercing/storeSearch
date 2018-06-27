@@ -38,11 +38,15 @@ class DetailViewController: UIViewController {
         print("deinit \(self)")
         downloadTask?.cancel()
     }
-
-      // MARK: - Lifecycle
+    
+    // MARK: - Lifecycle
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        // Limpiamos el fondo de la vista para que se pueda
+        // aplicar la máscara gradiente que se va a utilzar.
+        //view.backgroundColor = UIColor.clear
         
         // Cambiamos el color de la view, que afectará a los dos botones, precio y cerrar.
         view.tintColor = UIColor(red: 20/255, green: 160/255, blue: 160/255, alpha: 1)
@@ -57,12 +61,13 @@ class DetailViewController: UIViewController {
         gestureRecognizer.delegate = self
         view.addGestureRecognizer(gestureRecognizer)
         
-         // Si hay resultados, actualizamos la UI
+        // Si hay resultados, actualizamos la UI
         if let _ = searchResult  {
             updateUI()
         }
+        
     }
-
+    
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
@@ -71,7 +76,7 @@ class DetailViewController: UIViewController {
     // MARK: - UI
     
     func updateUI() {
-
+        
         nameLabel.text = searchResult.name
         
         if searchResult.artistName.isEmpty {
@@ -124,24 +129,24 @@ class DetailViewController: UIViewController {
 }
 
 
-  // MARK: - Extensions
+// MARK: - Extensions
 
 // Los métodos de este protocolo delegado de UIKit dicen qué objetos se deben utilizar para realizar la transición al controlador de detailView.
 // Utilizaremos ahora nuestro nuevo controlador, la clase "DimmingPresentationController" en lugar del controlador de presentación estándar.
 extension DetailViewController: UIViewControllerTransitioningDelegate {
+    
     func presentationControllerForPresentedViewController(presented: UIViewController, presentingViewController presenting: UIViewController, sourceViewController source: UIViewController) -> UIPresentationController? {
         return DimmingPresentationController(presentedViewController: presented, presenting: presenting)
     }
     
-//    func animationControllerForPresentedController(presented: UIViewController, presentingController presenting: UIViewController, sourceController source: UIViewController) -> UIViewControllerAnimatedTransitioning? {
-//        return BounceAnimationController()
-//    }
-//    
-//    func animationControllerForDismissedController(dismissed: UIViewController) -> UIViewControllerAnimatedTransitioning? {
-//        return SlideOutAnimationController()
-//    }
+    func animationController(forPresented presented: UIViewController, presenting: UIViewController, source: UIViewController) -> UIViewControllerAnimatedTransitioning? {
+        return BounceAnimationController()
+    }
+    
+    func animationController(forDismissed dismissed: UIViewController) -> UIViewControllerAnimatedTransitioning? {
+            return SlideOutAnimationController()
+    }
 }
-
 
 // Con esta extesión delegado podemos cerrar la ventana de detalle con solo tocar fuera de ella en la pantalla.
 // Cualquier otro toque/tap debe ser ignorado. Devuelve true cuando se toca en la pantalla fuera de la ventana
