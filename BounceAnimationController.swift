@@ -27,6 +27,9 @@ class BounceAnimationController: NSObject, UIViewControllerAnimatedTransitioning
             toView.frame = transitionContext.finalFrame(for: toViewController)
             containerView.addSubview(toView)
             toView.transform = CGAffineTransform(scaleX: 0.7, y: 0.7)
+            toView.transform = CGAffineTransform(translationX: -10, y: 10)
+            toView.transform = CGAffineTransform(rotationAngle: 180.0)
+            
             
             // Aquí comienza la animación real, en "animateKeyframes". Se establece el estado inicial antes de que el bloque de animación, y UKit animen
             // automáticamente las propiedades que se cambian en el interior del cierre. La diferencia con el anterior es que una animación de fotogramas

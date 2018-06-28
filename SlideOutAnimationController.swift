@@ -26,6 +26,7 @@ class SlideOutAnimationController: NSObject, UIViewControllerAnimatedTransitioni
             UIView.animate(withDuration: duration, animations: {
                 fromView.center.y -= containerView.bounds.size.height
                 fromView.transform = CGAffineTransform(scaleX: 0.5, y: 0.5)
+                fromView.transform = CGAffineTransform(rotationAngle: -360.0)
             }, completion: { finished in transitionContext.completeTransition(finished) } )
         }
     }
