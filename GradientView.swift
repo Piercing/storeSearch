@@ -19,11 +19,17 @@ class GradientView: UIView {
     override init(frame: CGRect) {
         super.init(frame: frame)
         backgroundColor = UIColor.clear
+        // Esto le dice a la view que  debe cambiar tanto su anchura como su  altura proporcionalmente
+        // cuanod la supervista va a ser redimensionada, debido a que se va a girar la app u otra cosa.
+        // Esto significa que la vista GradientView siempre va a cubrir la misma área que cubren sus
+        // super Views y no debe haber más huecos, incluso si el dispositivo se gira.
+        autoresizingMask = [.flexibleWidth, .flexibleHeight]
     }
     
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
         backgroundColor = UIColor.clear
+        autoresizingMask = [.flexibleWidth, .flexibleHeight]
     }
     
     // NOTA 2: Que en términos generales no es óptima para crear nuevos objetos en el interior de su método "draw()" , tal como

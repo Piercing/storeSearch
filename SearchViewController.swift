@@ -20,6 +20,7 @@ class SearchViewController: UIViewController {
     
     // Variables globales/instancia.
     
+    var landscapeViewController: LandscapeViewController?
     
     var searchResults: [SearchResult] = []
     // Es opcional, ya que no tendremos un dataTask,
@@ -102,9 +103,9 @@ class SearchViewController: UIViewController {
     // MARK: Actions
     
     @IBAction func segmentChanged(_ sender: UISegmentedControl) {
-       performSearch()
+        performSearch()
     }
-
+    
     
     // MARK: ParseJSON
     
@@ -253,6 +254,130 @@ class SearchViewController: UIViewController {
         }
     }
     
+    // MARK: - Orientations
+    
+    // Cada vez que un "trait colletion" cambia, (rotar dispositivo, la fuente de letras, el idioma, etc)
+    // UIKit llama a este método para dar al controlador la oportunidad de adaptarse a los nuevos traits.
+    // Lo que nos importa aquí son las "size classes", que nos permite diseñar unas interfaces de usuario
+    // que son independiente de las dimensiones o la orientación real del dispositivo, --> "iPhone o iPad".
+    // Comprobamos aquí si rota el dispositivo, viendo cómo cambia la size clase de tamaño, como observamos.
+    override func willTransition(to newCollection: UITraitCollection, with coordinator: UIViewControllerTransitionCoordinator) {
+        super.willTransition(to: newCollection, with: coordinator)
+        
+        switch newCollection.verticalSizeClass {
+        case .compact: showLandscape(with: coordinator) // el dispositivo se voltea/rota a Landscape
+        case .regular, .unspecified: hideLandscape(with: coordinator) // el dispositovo está de vuelta, ocultar la vista Landscape.
+        }
+    }
+    
+    // **** NOTA ****:  A pesar de que aparecerá en la parte superior de todo lo demás, la pantalla del landscape no se presenta de
+    // forma modal. Ésta está “contenida” en su controlador de vista padre, y por lo tanto pertenece y es administrada por ella, no
+    // es independiente como una pantalla modal. Esta es una distinción importante.
+    
+    // View controlador también se utiliza para los controladores barra de navegación y de la ficha donde el UINavigationController
+    // y UITabBarController “Envolver” a sus controladores de vista del niño.
+    
+    // Por lo general, cuando se quiere mostrar un controlador de vista que se hace cargo de toda la pantalla tendrá que utilizar
+    // un segue modal. Pero cuando se quiere sólo una parte de la pantalla que será gestionado por su propio controlador de
+    // vista que lo convierte en un controlador de vista hijo.
+    
+    // Es una de las razones por las que no está utilizando un segue modal para la pantalla del landscape en esta aplicación, a pesar
+    // de que se trata de un controlador de vista de pantalla completa, es decir que el detalle emergente ya está presentado de
+    // forma modal y esto podría causar conflictos. Además, quería mostrarle una alternativa divertida a segues modal.
+    
+    func showLandscape(with coordinator: UIViewControllerTransitionCoordinator) {
+        
+        // 1.- Nunca debe ocurrir que la app cree una instancia de una segunda vista landscape cuando
+        // ya se está obteniendo una. Si "guard" es nil codifica este requisito, mostrar landscape.
+        // Si no se cumple, entonces simplemente retorna inmediateamente.
+        guard landscapeViewController == nil else { return }
+        
+        // 2.- Encontrar la escena con el ID "LandscapeViewController" en el storyboard e instanciarlo,
+        // debido a que no tenemos un segue, debemos hacerlo manualmente, por eso pusimos el ID en el
+        // campo ID del guión del storyboard.
+        landscapeViewController = storyboard!.instantiateViewController(withIdentifier: "LandscapeViewController") as? LandscapeViewController
+        
+        // La variable de instancia "landscapeViewController" es un opcional,
+        // de ahí que necesitemos desempaquetarlo antes de poder continuar.
+        if let controller = landscapeViewController {
+            
+            // 3.- Ajustar el tamaño y la posición del nuevo view controller. Esto hace la vista
+            // tan grande como "SearchViewController" que cubre toda la pantalla. El "frame" es el
+            // rectángulo que describe la posición y el tamaño de la vista en términos de su supervista.
+            // Para mover un objeto de su posición y su tamaño final normalmente se establece sus límites
+            // con "frame".
+            controller.view.frame = view.bounds
+            controller.view.alpha = 0
+            
+            // 4.- A continuación los passo mínimos necesarios para agregar el contenido de un view controller
+            // a otro view controller, en este orden:
+            // a.- Añadir el view controller landscape como subvista. Esto lo coloca en la parte superior de la
+            // table view, search bar y segmente control.
+            // b.- En segundo lugar, le decimos a la SearchViewController que LandscapeViewController hace la
+            // gestión de esa parte de la pantalla, usando addChildViewController(). Si nos olvidamos de este
+            // paso, entonces el nuevo viewController no siempre funcionará correctamente.
+            // c.- Decirle al nuevo viewController que ahora tiene un viewController padre con "didMove(toParentController)"
+            
+            // En este nuevo esquema, SearchViewController es el viewController padre y LandscapeViewController es el hijo.
+            // En otras palabras, la pantalla Landscape está incustrada dentro de SearchViewController.
+            view.addSubview(controller.view)
+            addChildViewController(controller)
+            
+            // ******* NOTA *******: Todavía se están haciendo las mismas cosas que antes, excepto que ahora landscape comienza
+            // completamente transparente (alfa = 0) y se desvanece lentamente mientras que la rotación tiene lugar hasta que la
+            // completamente visible ( alfa = 1). Ahora ves por qué el UIViewControllerTransitionCoordinator Se necesita objeto,
+            // por lo que la animación se puede realizar junto con el resto de la transición de los viejos rasgos a lo nuevo.
+            // Esto asegura que las animaciones se ejecutan todo lo suavemente posible. La llamada a animar (alongsideTransition, completion)
+            // toma dos closures: el primero es para la animación en sí, el segundo es un “completion handler” que es llamado una
+            // vez finalizada la animación. El “completion handler” le da la oportunidad de retrasar la llamada a "didMove
+            // (toParentViewController)" hasta que la animación ha terminado. Ambos cierres se les da un parámetro “transition coordinator context”
+            // (el mismo contexto que los controladores de animación consiguen), pero no es muy interesante aquí y se utiliza el comodín _ paraignorarlo.
+            
+            coordinator.animate(alongsideTransition: { _ in
+                controller.view.alpha = 1
+                // Ocultamos el teclado al girar
+                self.searchBar.resignFirstResponder()
+            },  completion: { _ in
+                controller.didMove(toParentViewController: self)
+            })
+        }
+    }
+    
+    // Un objeto conforme a este protocolo es devuelto por: ----> [UIViewController
+    // transitionCoordinator] cuando una transición activa o presentación / despido
+    // es en vuelo. Un controlador de contenedor no puede vender tal objeto. Esto es
+    // un objeto efímero que se libera después de que finaliza la transición y el la
+    // última devolución de llamada se ha realizado.
+    
+    // Para que la aplicación compile, añadir el método “hideLandscape” vacio.
+    // A continuación le damos la implementación para que al volver a posición
+    // vertical desaparezca el modo landscape.
+    
+    func hideLandscape(with coordinator:UIViewControllerTransitionCoordinator) {
+        
+        if let controller = landscapeViewController {
+            // Le decimos al viewController landscape que ya no
+            // tiene padre y que abandona la vista de jerarquía.
+            controller.willMove(toParentViewController: nil)
+            
+            coordinator.animate(alongsideTransition: { _ in
+                
+                // Hacemos que al girar, si está la ventana modal, el pop-up de la fila pulsada desaparezca en el modo landscape.
+                if self.presentedViewController != nil {
+                    self.dismiss(animated: true, completion: nil)
+                }
+                controller.view.alpha = 0
+            }, completion: { _ in
+                // Quitamos la vista de la pantalla.
+                controller.view.removeFromSuperview()
+                // Quitamos del padre que es el que realmente tiene dispone de los viewControllers.
+                controller.removeFromParentViewController()
+                // Establecemos la variable de instacia a "nil" con el fin de eliminar la última
+                // referencia fuerte a LandscapeViewController, dado que ya ha terminado con él.
+                self.landscapeViewController = nil
+            })
+        }
+    }
 }
 
 // MARK: Extensions

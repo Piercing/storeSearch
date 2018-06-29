@@ -22,6 +22,15 @@ class DetailViewController: UIViewController {
     var searchResult: SearchResult!
     var downloadTask: URLSessionDownloadTask?
     
+    // Especificamos la forma en que se va a animar al cerrar el pop-up.
+    enum AnimationStyle {
+        case slide
+        case fade
+    }
+    
+    // Por defecto la animación de cerrar el pop-up al girar a horizontal.
+    var dismissAnimationStyle = AnimationStyle.fade
+    
     // Este init se invoca  para cargar el controlador de la vista del storyboard.
     // Aquí UIKit  dice que este  controlador de vista utilizará  una presentación
     // personalizada y se establece el delegado que llamará al método que se acaba
@@ -46,7 +55,7 @@ class DetailViewController: UIViewController {
         
         // Limpiamos el fondo de la vista para que se pueda
         // aplicar la máscara gradiente que se va a utilzar.
-        //view.backgroundColor = UIColor.clear
+        view.backgroundColor = UIColor.clear
         
         // Cambiamos el color de la view, que afectará a los dos botones, precio y cerrar.
         view.tintColor = UIColor(red: 20/255, green: 160/255, blue: 160/255, alpha: 1)
@@ -111,12 +120,12 @@ class DetailViewController: UIViewController {
     // MARK: - Actions
     
     @IBAction func close() {
+        dismissAnimationStyle = .slide
         dismiss(animated: true, completion: nil)
     }
     
-    
     // El servicio web devuelve una URL a la página del producto. Sólo tenemos que decirle al objeto UIApplication
-    // que abra dicha  dirección URL. iOS ahora se dará cuenta  de qué tipo de es y lanzará la aplicación adecuada.
+    // que abra dicha  dirección URL.-> "iOS" ahora se dará cuenta de qué tipo es y lanzará la aplicación adecuada.
     @IBAction func openInStore() {
         if let url = URL(string: searchResult.storeURL) {
             
@@ -144,7 +153,11 @@ extension DetailViewController: UIViewControllerTransitioningDelegate {
     }
     
     func animationController(forDismissed dismissed: UIViewController) -> UIViewControllerAnimatedTransitioning? {
-            return SlideOutAnimationController()
+        
+        switch dismissAnimationStyle {
+        case .slide: return SlideOutAnimationController()
+        case .fade:  return FadeOutAnimationController()
+        }
     }
 }
 
@@ -153,7 +166,10 @@ extension DetailViewController: UIViewControllerTransitioningDelegate {
 // pop-up y falso si tocamos o hacemos tap dentro de la ventana modal del pop-up.
 extension DetailViewController: UIGestureRecognizerDelegate {
     private func gestureRecognizer(gestureRecognizer: UIGestureRecognizer, shouldReceiveTouch touch: UITouch) -> Bool {
-        return (touch.view === self.view)
+        
+        let touchTrueOrFalse: Bool = touch.view == self.view
+        print("TOUCH VIEW: \(touchTrueOrFalse)")
+        return touchTrueOrFalse
     }
 }
 
