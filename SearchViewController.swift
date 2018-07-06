@@ -301,6 +301,15 @@ class SearchViewController: UIViewController {
         // de ahí que necesitemos desempaquetarlo antes de poder continuar.
         if let controller = landscapeViewController {
             
+            // Pasamos los  resultados  al array de  LandScape; tenemos que estar seguros  de llenar el array,
+            // con los resultados de la búsqueda, antes de acceder a la propiedad del LandScapeViewController,
+            // dado  que se  disparará la vista para  ser cargada y  ejecutada por  el método "viewDidLoad()".
+            
+            // El view Controller va a leer del array los resultados en viewDidLoad() para construir el contenido
+            // de su scroll view. Pero si accedemos al controller.view antes de establecer los "searchResults",
+            // esta propiedad estará todavía  a nil y no podremos hacer nada para rellenar los botones en land.
+            controller.searchResults = searchResults
+            
             // 3.- Ajustar el tamaño y la posición del nuevo view controller. Esto hace la vista
             // tan grande como "SearchViewController" que cubre toda la pantalla. El "frame" es el
             // rectángulo que describe la posición y el tamaño de la vista en términos de su supervista.
