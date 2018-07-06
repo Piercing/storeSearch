@@ -13,18 +13,27 @@ class LandscapeViewController: UIViewController {
     // MARK: - Globals varialbes
     
     var searchResults = [SearchResult]()
+    
     // Privada dado que sólo se utilizará en este controller
     // y  no fuera de él. No  debe de  ser visible por otros.
     // Controla la  primera vez que  accedemos a "LandScape".
     private var firstTime = true
+    
+    // Este array mantiene un registro de todos los objetos activos URLSessionDownloadTask
+    private var downloadTasks = [URLSessionDownloadTask]()
     
     @IBOutlet weak var scrollView: UIScrollView!
     @IBOutlet weak var pageControl: UIPageControl!
     
     // Para comprobar por consola que el objeto se
     // cancela correcta/ cuando la pantalla se cierra.
+    // Además cancelamos todas las tareas que estén
+    // ejecutándose al salir del modo landscape.
     deinit {
         print("deinit \(self)")
+        for task in downloadTasks {
+            task.cancel()
+        }
     }
     
     // MARK: - Lifecycle
@@ -34,10 +43,10 @@ class LandscapeViewController: UIViewController {
         
         
         // Como vamos a hacer nuestras propias restricciones y no las automáticas
-        // que nos pone el Interface Builder (IB) eliminamos las constrainsts
-        // actuales en la view, en pageControl y en el scrollView. La segunda
-        // instrucción nos permite colocar y modificar el tamaño de las vistas
-        // manualmente al poner dicha propiedad a true, con esto no entramos en
+        // que nos pone el Interface Builder ("IB")  eliminamos las "constrainsts"
+        // actuales  en la view, en pageControl y en el "scroll View". La segunda
+        // instrucción nos 2permite colocar y 2modificar el2 tamaño de las vistas
+        // manualmente al poner dicha propiedad a "true", con esto no entramos en
         // conflicto con Auto Layout ya que para este controlador están activadas.
         view.removeConstraints(view.constraints)
         view.translatesAutoresizingMaskIntoConstraints = true
@@ -76,7 +85,6 @@ class LandscapeViewController: UIViewController {
         // y añadimos aquí la siguient línea de código, para ocultar con eficacia
         // el "scroll view", para cuando no haya resultados en la búsqueda.
         pageControl.numberOfPages = 0
-        
         
     }
     
@@ -182,12 +190,15 @@ class LandscapeViewController: UIViewController {
         var column = 0
         var x = marginX
         
-        for (index, searchResult) in searchResults.enumerated() {
+        for (_, searchResult) in searchResults.enumerated() {
             // 1.- Creamos el botón, utilizando el título con el índice del array.
             // Si hay 200 resultados de búsqueda, debemos terminar con 200 botones.
-            let button = UIButton(type: .system)
-            button.backgroundColor = UIColor.white
-            button.setTitle("\(index)", for: .normal)
+            // Personalizamos el boton, dándole una imagen de fonde en vez de título.
+            let button = UIButton(type: .custom)
+            button.setBackgroundImage(UIImage(named: "LandscapeButton"), for: .normal)
+            
+            // Llamamos al método para descargar las imágenes 60x60 para agregarlas a los botones.
+            downloadImage(for: searchResult, andPlaceOn: button)
             
             // 2.- Cuando se hace un botón por código, simpre hay que ajustar su frame.
             // Uitlizando las mediciones anteriores, se determina la posición y el tamaño.
@@ -244,13 +255,40 @@ class LandscapeViewController: UIViewController {
         
     }
     
+    
+    // En primer lugar se obtiene el objeto URL con el link para las imágenes 60x60 pixeles
+    // y luego se crea una "task" de descarga. Dentro del "completion handler" se pone el
+    // archivo descargado en una UIImage, y si la operación tuvo éxito, utilizamos el hilo
+    // principal para colocar la imagen en los botones correspondientes.
+    private func downloadImage(for searchResult: SearchResult, andPlaceOn button: UIButton) {
+        
+        if let url = URL(string: searchResult.artworkSmallURL) {
+            // capturamos el button con un referencia débil (weak), para que cuando volteemos el teléfono
+            // si existe aún una descarga, la referencia a el botón sea débil y coja el valor de nil para
+            // que la aplicación no se caiga.
+            let downloadTask = URLSession.shared.downloadTask(with: url) { [weak button] url, response, error in
+                if error == nil, let url = url, let data = try? Data(contentsOf: url), let image = UIImage(data: data) {
+                    DispatchQueue.main.async {
+                        if let button = button {
+                            button.setImage(image, for: .normal)
+                        }
+                    }
+                }
+            }
+            
+            downloadTask.resume()
+            
+            downloadTasks.append(downloadTask)
+        }
+    }
+    
     // MARK: - Actions
     
     @IBAction func pageChanged(_ sender: UIPageControl) {
         UIView.animate(withDuration: 0.3, delay: 0, options: [.curveEaseInOut], animations: {
                         self.scrollView.contentOffset = CGPoint(x: self.scrollView.bounds.size.width * CGFloat(sender.currentPage), y: 0)
-        },
-                       completion: nil)
+        }
+            , completion: nil)
     }
 }
 
@@ -271,7 +309,7 @@ class LandscapeViewController: UIViewController {
 // actualiza el número de página activo de pageControl.
 
 // Esto funciona a la inversa: cuando el usuario pulsa en el "Page Control", la propiedad "currentPage"
-// se actualiza, utilizándose para calcular un nuevo "contentOffset" para la "scroll view"
+// se actualiza, utilizándose para calcular un nuevo "contentOffset" para la "scroll view".
 extension LandscapeViewController: UIScrollViewDelegate {
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
         let width = scrollView.bounds.size.width
