@@ -71,6 +71,13 @@ class LandscapeViewController: UIViewController {
         // desgracia no se puede establecer esta propiedad desde el Interface Builder, se hace por código.
         // scrollView.contentSize = CGSize(width: 1000, height: 1000) // --> !!Se puso sólo para probar que fuciona!!.
         
+        
+        // Activamos en el StoryBoard, en "scroll view" --> "Paging Enabled"
+        // y añadimos aquí la siguient línea de código, para ocultar con eficacia
+        // el "scroll view", para cuando no haya resultados en la búsqueda.
+        pageControl.numberOfPages = 0
+        
+        
     }
     
     
@@ -229,22 +236,49 @@ class LandscapeViewController: UIViewController {
             width: CGFloat(numPages)*scrollViewWidth,
             height: scrollView.bounds.size.height)
         print("Number of pages: \(numPages)")
-
+        
+        // Establecemos el número de puntos (dots) que  "page control"
+        // mostrará según los cálculos que hicimos anteriormente.
+        pageControl.numberOfPages = numPages
+        pageControl.currentPage = 0
+        
     }
     
-    /*
-     // MARK: - Navigation
-     
-     // In a storyboard-based application, you will often want to do a little preparation before navigation
-     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-     // Get the new view controller using segue.destinationViewController.
-     // Pass the selected object to the new view controller.
-     }
-     */
+    // MARK: - Actions
     
-    
+    @IBAction func pageChanged(_ sender: UIPageControl) {
+        UIView.animate(withDuration: 0.3, delay: 0, options: [.curveEaseInOut], animations: {
+                        self.scrollView.contentOffset = CGPoint(x: self.scrollView.bounds.size.width * CGFloat(sender.currentPage), y: 0)
+        },
+                       completion: nil)
+    }
 }
 
+// MARK: - Extensions
+
+// Para que todo esto funcione, tenemos que hacer que el "scroll view" hable con "page control"
+// y viceversa. El view controller debe ser el "delegado" de la "scroll view" por lo que será
+// notificado cuando el usuario está ojeando las páginas.
+
+// Este es uno de los métodos UIScrollViewDelegate.
+// Averigüamos cual es el índice actual de la página mirando la propiedad "contentOffset" de la
+// "scroll view". Esta propiedad determina hasta qué punto la "scroll view" se ha desplazado y
+// se actuliza mientras se está arrastrando la "scroll view".
+
+// Desafortunadamente, "scroll view" no nos dice simplemente,"El usuario ha volteado a la página
+// X ", entonces debemos calcular esto nosotros mismos. Si la "content offset" va más allá de la
+// mitad de la página (ancho / 2), la  "scroll view" se desplazará a la siguiente página. En eso
+// actualiza el número de página activo de pageControl.
+
+// Esto funciona a la inversa: cuando el usuario pulsa en el "Page Control", la propiedad "currentPage"
+// se actualiza, utilizándose para calcular un nuevo "contentOffset" para la "scroll view"
+extension LandscapeViewController: UIScrollViewDelegate {
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        let width = scrollView.bounds.size.width
+        let currentPage = Int((scrollView.contentOffset.x + width/2)/width)
+        pageControl.currentPage = currentPage
+    }
+}
 
 
 
