@@ -80,7 +80,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="20" y="-11"/>
+            <point key="canvasLocation" x="10" y="-12"/>
         </scene>
         <!--Landscape View Controller-->
         <scene sceneID="FX4-w8-TuU">
@@ -115,7 +115,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="o4G-vX-TkO" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="19" y="673"/>
+            <point key="canvasLocation" x="10" y="916"/>
         </scene>
         <!--Detail View Controller-->
         <scene sceneID="BOS-hj-DVW">
@@ -125,7 +125,7 @@
                         <rect key="frame" x="0.0" y="0.0" width="812" height="375"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="fGS-BJ-4SF" userLabel="Pop-up View">
+                            <view userInteractionEnabled="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="fGS-BJ-4SF" userLabel="Pop-up View">
                                 <rect key="frame" x="286" y="67.666666666666686" width="240" height="240"/>
                                 <subviews>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="aPz-dd-UXI">
@@ -192,6 +192,9 @@
                                     </label>
                                 </subviews>
                                 <color key="backgroundColor" red="1" green="1" blue="1" alpha="0.94982081422018338" colorSpace="custom" customColorSpace="sRGB"/>
+                                <accessibility key="accessibilityConfiguration">
+                                    <accessibilityTraits key="traits" notEnabled="YES"/>
+                                </accessibility>
                                 <constraints>
                                     <constraint firstItem="Eeg-XZ-fKu" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="fGS-BJ-4SF" secondAttribute="leading" constant="20" symbolic="YES" id="0h9-Jo-oHc"/>
                                     <constraint firstItem="mwz-Qb-zSU" firstAttribute="leading" secondItem="fGS-BJ-4SF" secondAttribute="leading" constant="8" id="3bB-YY-SUx"/>
@@ -227,6 +230,9 @@
                             </view>
                         </subviews>
                         <color key="backgroundColor" red="0.0" green="0.0" blue="0.0" alpha="0.5" colorSpace="custom" customColorSpace="sRGB"/>
+                        <accessibility key="accessibilityConfiguration">
+                            <accessibilityTraits key="traits" notEnabled="YES"/>
+                        </accessibility>
                         <constraints>
                             <constraint firstItem="fGS-BJ-4SF" firstAttribute="centerY" secondItem="F5K-Zs-pSD" secondAttribute="centerY" id="AK5-al-8WE"/>
                             <constraint firstItem="fGS-BJ-4SF" firstAttribute="centerX" secondItem="F5K-Zs-pSD" secondAttribute="centerX" id="Bu5-js-3de"/>
@@ -245,7 +251,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="c0A-pH-qaj" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="757" y="-11"/>
+            <point key="canvasLocation" x="821" y="-12"/>
         </scene>
     </scenes>
     <resources>

@@ -25,8 +25,8 @@ class LandscapeViewController: UIViewController {
     @IBOutlet weak var scrollView: UIScrollView!
     @IBOutlet weak var pageControl: UIPageControl!
     
-    // Para comprobar por consola que el objeto se
-    // cancela correcta/ cuando la pantalla se cierra.
+    // Para comprobar por consola que el objeto se ha
+    // cancelado corret/ cuando la pantalla se cierra.
     // Además cancelamos todas las tareas que estén
     // ejecutándose al salir del modo landscape.
     deinit {

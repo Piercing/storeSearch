@@ -18,7 +18,7 @@ class DimmingPresentationController: UIPresentationController {
     // secundario, liberando así a la clase DetailView de cualquier  responsabilidad. El gradiente es realmente un efecto secundario
     // de hacer una presentación, por lo que peretenece al controlador de presentación.
     
-    // Los métodos "presentationTransitionWillBegin" se incocan cuando el nuevo controlador de vista está a punto de ser mostrado en
+    // Los métodos "presentationTransitionWillBegin" se invocan cuando el nuevo controlador de vista está a punto de ser mostrado en
     // pantalla. Aquí se crea el objeto GradientView, que hace que sea tan grande como el "containerView" y lo inserta detrás de todo
     // lo demás en esta vista "container view". Ésta vista recipiente es un nuevo punto de vista que se coloca en la parte superior de
     // la "SearchViewController" y contiene los puntos de vista de la  DetailViewController. Así que esta pieza de código coloca la
@@ -37,7 +37,10 @@ class DimmingPresentationController: UIPresentationController {
         // ninguna de sus animaciones se debe hacer en un cierre pasó a animateAlongsideTransition para mantener la transición
         // sin problemas. Si los usuarios querían animaciones agitadas, habrían comprado los teléfonos Android!
         dimmingView.alpha = 0
-        if let coordinator = presentedViewController.transitionCoordinator { coordinator.animate(alongsideTransition: { _ in self.dimmingView.alpha = 1 }, completion: nil) }
+        if let coordinator = presentedViewController.transitionCoordinator {
+            coordinator.animate(alongsideTransition: { _ in
+                self.dimmingView.alpha = 1
+            }, completion: nil) }
     }
     
     // "dismissalTransitionWillBegin()", se utiliza para animar la vista gradiente de fuera de la vista cuando se desestimó el detalle emergente.

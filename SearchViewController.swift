@@ -348,6 +348,9 @@ class SearchViewController: UIViewController {
                 self.searchBar.resignFirstResponder()
             },  completion: { _ in
                 controller.didMove(toParentViewController: self)
+                if self.presentationController != nil {
+                    self.dismiss(animated: true, completion: nil)
+                }
             })
         }
     }

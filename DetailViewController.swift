@@ -156,7 +156,7 @@ extension DetailViewController: UIViewControllerTransitioningDelegate {
         
         switch dismissAnimationStyle {
         case .slide: return SlideOutAnimationController()
-        case .fade:  return FadeOutAnimationController()
+        case  .fade: return FadeOutAnimationController()
         }
     }
 }
