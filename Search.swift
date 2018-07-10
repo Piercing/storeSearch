@@ -11,13 +11,75 @@ import Foundation
 
 class Search {
     
-    // Public properties
-    var searchResults: [SearchResult] = []
-    var hasSearched = false
-    var isLoading = false
+    // Cada uno de estos valores tiene un valor numérico asociado a él,
+    // llamado "raw" value. Esto contrasta con la enum creada antes:
+    
+    // enum AnimationStyle {
+    //      case slide
+    //      case fade
+    // }
+    
+    // Esta  última enum no da un valor numérico a sus "case" ni
+    // le dice el tipo de dato que es, como Int en nuestro nuevo
+    // enum, en la cual queremos conectar sus cuatro elementos a
+    // los cuatro posibles índices del "segment control",por eso
+    // que los  elementos de "Category" tienen números asociados.
+    public enum Category: Int {
+        case all        = 0
+        case music      = 1
+        case software   = 2
+        case ebooks     = 3
+        
+        // En Swift, no pueden haber variables de instancia en las "enums"
+        // sólo  propiedades calculadas ".entityName", y aquí hacemos una
+        // de ellas, con un "switch" con el valor "self", que es el valor
+        // actual del objeto "enum" ("all", "music", "software" o "ebooks").
+        var entityName: String {
+            switch self {
+            case .all: return ""
+            case .music: return "musicTrack"
+            case .software: return "sotfware"
+            case .ebooks: return "ebook"
+            }
+        }
+    }
+    
+    // Public properties with enum.
+    
+    // Esta enum tiene un caso para cada uno de los cuatro estados y no necesita
+    // rawValues por lo que los "case" no tienen número. Importante mencianar que
+    // "notSearchYet" también se va a utilizar para cuando hay un error. El "case
+    // results" es especial, éste tiene un valor asociado ("associated value"),
+    // que es un array de tipo "SearchResult" y que es solamente importante cuando
+    // la búsqueda se ha realizado correctamente. En todos los otros casos, no hay
+    // resultados de búsqueda y el array estará vacío de todas formas, por lo que
+    // es un valor asociado que sólo tendrá acceso a este array cuando "Search"
+    // esté en el estado --> ".results" del enum
+    enum State {
+        case notSearchYet
+        case loading
+        case noResults
+        case results([SearchResult])
+    }
+    
     
     // Private properties
     private var dataTask: URLSessionDataTask? = nil
+    // Esta mantiene un retistro del estado actual de "Search's"
+    // Su valor inicial es ".notSearchYet". Obviamente no hay
+    // búsqueda hasta que el objeto "Search" se construya primero.
+    
+    // NOTA: Esta variable es "private" pero sólo la mitad. No es
+    // razonable para otros objetos el preguntar a "Search" sobre
+    // su etado actual. De hecho la aplicación no funcionará a menos
+    // que permitamos esto. Pero no queremos que otros objetos puedan
+    // cambiar el valor del estado, solo permitiremos que puedan leer
+    // dicho valor de estado ("state").
+    
+    // Con "private(set), Swift permite la lectura a otros objetos,
+    // pero la asignación de nuevos valores para esta variable sólo
+    // puede ocurrir dentro de la clase "Search".
+    private(set) var state: State = .notSearchYet
     
     // Typealias
     typealias SearchComplete = (Bool) -> Void
@@ -29,7 +91,7 @@ class Search {
     // que este "closure" puede necesitar capturar variables tales como "self" y mantenerlas por un tiempo hasta
     // que finalice el "closure" y éste pueda ser finalizado (una vez que la búsqueda se ha realizado).
     //
-    func performSearch(for text: String, category: Int, completion: @escaping SearchComplete) { // PASAMOS EL typealias "SearchComplete"
+    func performSearch(for text: String, category: Category, completion: @escaping SearchComplete) { // PASAMOS EL typealias "SearchComplete"
         
         if !text.isEmpty {
             
@@ -39,17 +101,14 @@ class Search {
             // dado que cuando la primera vez que el usuario escribe algo en la searchBar, 'dataTask' aún será 'nil' por lo que se caería la app.
             dataTask?.cancel()
             
-            // Activamos el activity indicator y refrescamos la tabla.
-            isLoading = true
-            
-            // Aquí ya se realiza búsqueda, por tanto a true.
-            hasSearched = true
-            searchResults = []
+            // Activamos el activity indicator.
+            state = .loading
             
             // --- *** IMPLEMENTAMOS URLSESSION *** --- //
             
-            // 1.- Creamos el objeto URL añadiéndole el texto de búsqueda y la categoría.
-            let url = iTunesURL(searchText: text, category: category)
+            // 1.- Creamos el objeto URL añadiéndole el texto de búsqueda
+            // y la  categoría obteniendo  su valor en  crudo, "rawValue".
+            let url = iTunesURL(searchText: text, category: Search.Category(rawValue: category.rawValue)!)
             // 2.- Obtenemos el objeto URLSession, mediante la sesión compartida,
             // utilizando una configuración predeterminada con respecto al alma-
             // cenamiento en caché, cookies, y otras cosas web. Podemos crear
@@ -62,6 +121,8 @@ class Search {
             dataTask = session.dataTask(with: url, completionHandler: {
                 data, response, error in
                 
+                // NO se ha encontrado hasta aquí nada todavía ni tenemos un "success".
+                self.state = .notSearchYet
                 var success = false
                 
                 // 4.- En el interior del closure tenemos tres parámetros, todos opcionales para
@@ -83,24 +144,27 @@ class Search {
                     let jsonDictionary = self.parse(json: jsonData) {
                     
                     // Aquí lo convertimos el contenido del diccionario en un objeto serchResults.
-                    self.searchResults = self.parse(dictionary: jsonDictionary)
-                    // Por último lo ordenamos.
-                    self.searchResults.sort(by: <)
+                    var searchResults = self.parse(dictionary: jsonDictionary)
+                    
+                    if searchResults.isEmpty {
+                        self.state = .noResults
+                        
+                    } else {
+                        // Por último lo ordenamos.
+                        searchResults.sort(by: <)
+                        
+                        // Esto da un valor a "state" de tipo ".results" y también asocia
+                        // los objetos del array "SearchResults" con el "state", por lo que
+                        // ya no necesitamos una variable de instancia independiente para
+                        // realizar un seguimiento del array.
+                        self.state = .results(searchResults)
+                    }
                     
                     print("Successss!!")
-                    // Paramos el spinner.
-                    self.isLoading = false
                     // Encotrados resultados
                     success = true
                     
                 }  // --- *** FIN URLSESSION --- *** //
-                
-                
-                // Si no hay resultados reseteamos search y paramos spinner.
-                if !success {
-                    self.hasSearched = false
-                    self.isLoading = false
-                }
                 
                 // Closure-completion le pasamos si hubo no hubo resultados en la búsqueda: success --> true or false.
                 // Se ejecuta cuando la búsqueda haya concluido.
@@ -125,17 +189,11 @@ class Search {
     // MARK: NetWork
     
     // Función que devuelve un objeto URL válido.
-    private func iTunesURL(searchText: String, category: Int) -> URL {
+    private func iTunesURL(searchText: String, category: Category) -> URL {
         
-        let entityName: String
-        
-        switch category {
-        case 1:  entityName = "musicTrack"
-        case 2:  entityName = "software"
-        case 3:  entityName = "ebook"
-        default: entityName = ""
-            
-        }
+        // Este código es mucho más limpio, todo lo que tiene que ver con las "Category"
+        // vive dentro de su propia "enum --> Category".
+        let entityName = category.entityName
         
         // Escapamos los espacios en  blanco entre los Strings de entrada en
         // la searchBar, codifica en 'UTF-8' que casi siempre va a funcionar.

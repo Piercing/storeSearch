@@ -114,7 +114,17 @@ class LandscapeViewController: UIViewController {
         // Utilizamos esta variable para asegurarnos que sólo colocamos los buttons en landscape una sola vez.
         if firstTime {
             firstTime = false
-            titleButtons(search.searchResults)
+            
+            switch search.state {
+                
+                // Si hay resultados/objetos, los almacenamos en una variable
+                // temporal, "list", y se los pasamos a "titleButtons", en los
+                // demás casos, salimos.
+            case .notSearchYet: break
+            case .loading: break
+            case .noResults: break
+            case .results(let list): titleButtons(list)
+            }
         }
     }
     

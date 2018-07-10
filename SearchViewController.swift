@@ -84,11 +84,18 @@ class SearchViewController: UIViewController {
     // MARK: Segue
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+   
+        
+        // Pasamos los datos de la row seleccionada a "DetailViewController"
         if segue.identifier == "ShowDetail" {
-            let detailViewController = segue.destination as! DetailViewController
-            let indexPath = sender as! IndexPath
-            let searchResult = search.searchResults[indexPath.row]
-            detailViewController.searchResult = searchResult
+            // Utilizamos, para un sólo caso, el "switch" especial para
+            // ello, el que sólo analiza un "case" con ----> "if case".
+            if case .results(let list) = search.state {
+                let detailViewController = segue.destination as! DetailViewController
+                let indexPath = sender as! IndexPath
+                let searchResult = list[indexPath.row]
+                detailViewController.searchResult = searchResult
+            }
         }
     }
     
@@ -249,7 +256,8 @@ extension SearchViewController: UISearchBarDelegate {
     func performSearch() {
         
         // Hacemos que la nueva clase creada "Search" haga el trabajo de búsqueda que se hacía antes aquí.
-        search.performSearch(for: searchBar.text!, category: segmentControl.selectedSegmentIndex, completion: { success in
+        search.performSearch(for: searchBar.text!, category: Search.Category(rawValue: segmentControl.selectedSegmentIndex)!,
+                             completion: { success in
             if !success {
                 self.showNetWorkError("Error NetWork", "A connection error occurred when accessing our servers")
             }
@@ -280,49 +288,55 @@ extension SearchViewController: UITableViewDataSource {
     // Número de filas que tendrá la tabla.
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         
-        if search.isLoading {
+        switch search.state  {
             
-            // Devolvemos uno porque necesitamos una fila para mostrar la celda de 'Cargando...'
-            return 1 // Loanding...
+        // Si no hubo aún una búsqueda no devuelve ninguna fila.
+        case .notSearchYet: return 0 // Not searched yet
             
-            // Si no hubo aún una búsqueda no devuelve ninguna fila.
-        } else if !search.hasSearched {
-            return 0 // Not searched yet
+        // Devolvemos uno porque necesitamos una fila para mostrar la celda de 'Cargando...'
+        case .loading: return 1 // Loanding...
             
-            // Si no hay resultados, devuelve una fila.
-        } else if search.searchResults.count == 0 {
-            return 1 // Nothing Found
+        // Si no hay resultados, devuelve una fila.
+        case .noResults: return 1 // Nothing Found
             
             // Si hay resultados, devuleve tantas filas como contenga el array que almacena los datos.
-        } else {
-            return search.searchResults.count
+            // Enlazamos los objetos que nos trae el array de "SearchResult" en una variable temporal
+            //  "list", y luego la usamos dentro del "case" para leer cuántos elementos trae el array.
+            
+            // Asñi es como hacemos uso del "valor asociado". Este patrón, usando un "switch" para ver
+            // el "estado", va a ser muy común en el código.
+        case .results(let list):
+            return list.count
         }
     }
     
     // Configura la celda a mostrar para el indexpath dado.
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
-        if search.isLoading {
-            let cell = tableView.dequeueReusableCell(withIdentifier: TableViewCellIdentifiers.loadingCell, for: indexPath)
+        switch search.state {
+            
+            // Si no hay celda aún (nos devuelven 0 celdas/rows) capturamos el error con el métoo "fatalError".
+        case .notSearchYet:
+            fatalError("Should never get here")
+            
+        case .loading:
+            let cell = tableView.dequeueReusableCell(withIdentifier: TableViewCellIdentifiers.loadingCell,for: indexPath)
             let spinner = cell.viewWithTag(100) as! UIActivityIndicatorView
             spinner.startAnimating()
             return cell
-        }
-        
+            
         // Si no hay resultados...
-        if search.searchResults.count == 0 {
-            // Devuleve la celda con el identificador de la celda "nada encontrado".
+        case .noResults:
             return tableView.dequeueReusableCell(withIdentifier: TableViewCellIdentifiers.nothingFoundCell, for: indexPath)
             
-        } else { // Por contrario, si hay resultados...
-            
+        // Por contrario, si hay resultados...
+        case .results(let list):
             // Creamos la celda ha reutilizar, con el identificador de ésta y de tipo "SearchResultCell".
             let cell = tableView.dequeueReusableCell(withIdentifier: TableViewCellIdentifiers.searchResultCell, for: indexPath) as! SearchResultCell
             
             // Almacenamos el resultado para el "indexpath" de la fila/row correspondiente, y
             // asignamos los valores que tendrán las views de la celda, y devolvemos la celda.
-            let searchResult = search.searchResults[indexPath.row]
-            
+            let searchResult = list[indexPath.row]
             // Llamamos al método configure de la clase SearchResultCell.
             cell.configure(for: searchResult)
             return cell
@@ -351,10 +365,14 @@ extension SearchViewController: UITableViewDelegate {
     // devolviendo un nuevo indexpath, o nil, para cambiar la selección propuesta.
     func tableView(_ tableView: UITableView, willSelectRowAt indexPath: IndexPath) -> IndexPath? {
         
-        // Si no hay resultados, devuelve nil, de lo contrario, devuelve el nuevo indexpath seleccionado.
-        if search.searchResults.count == 0 || search.isLoading {
+        switch search.state {
+            
+        // Si no hay resultados, devuelve nil para estos tres casos
+        // ya que solo es factible para cuando el "case" es ".results".
+        case .notSearchYet, .loading, .noResults:
             return nil
-        } else {
+            // Si hay resultados, devolvemos el "indexPath" de la row seleccionada.
+        case .results:
             return indexPath
         }
     }
