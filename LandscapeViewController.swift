@@ -12,7 +12,7 @@ class LandscapeViewController: UIViewController {
     
     // MARK: - Globals varialbes
     
-    var searchResults = [SearchResult]()
+    var search: Search!
     
     // Privada dado que sólo se utilizará en este controller
     // y  no fuera de él. No  debe de  ser visible por otros.
@@ -114,7 +114,7 @@ class LandscapeViewController: UIViewController {
         // Utilizamos esta variable para asegurarnos que sólo colocamos los buttons en landscape una sola vez.
         if firstTime {
             firstTime = false
-            titleButtons(searchResults)
+            titleButtons(search.searchResults)
         }
     }
     
