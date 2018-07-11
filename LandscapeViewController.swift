@@ -273,6 +273,18 @@ class LandscapeViewController: UIViewController {
                 y: marginY + CGFloat(row)*itemHeight + paddingVert,
                 width: buttonWidth, height: buttonHeight)
             
+            
+            /* Primero, le da al botón una etiqueta, para que sepa a qué índice en el array ".results"
+             corresponde este botón. Eso es necesario para pasar el SearchResult correcto objetar al
+             detalle emergente.
+             
+             Sugerencia: Agregaste 2000 al índice porque la etiqueta 0 se usa en todas las vistas de
+             manera predeterminada, por lo que pedir una vista con la etiqueta 0 podría devolver una
+             vista que no esperabas. Para evita este tipo de confusión, simplemente comienzas a contar
+             desde 2000. También le dice al botón que debe llamar a un método llamado buttonPressed ()
+             cuando este es presionado. */
+            button.tag = 2000 //+ index
+            button.addTarget(self, action: #selector(buttonPressed),for: .touchUpInside)
             // 3.- Añadimos el nuevo botón a la subvista ScrollView. Después de los
             // primeros 18 botones (dependiendo del tamaño de la pantalla), se colocan
             // los siguientes botones fuera del rango visible de la "scroll view".
@@ -296,6 +308,8 @@ class LandscapeViewController: UIViewController {
                     column = 0; x += marginX * 2
                 }
             }
+            
+            
         }
         
         // Aquí calculamos al "contentSize" para "scroll view" basado en el número de botones
@@ -368,6 +382,23 @@ class LandscapeViewController: UIViewController {
     
     
     // MARK: - Actions
+    
+    // MARK: - Prepare for segue
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == "ShowDetail" {
+            if case .results(let list) = search.state {
+                let detailViewController = segue.destination as! DetailViewController
+                let searchResult = list[(sender as! UIButton).tag - 2000]
+                detailViewController.searchResult = searchResult
+            }
+        }
+    }
+            
+            
+    
+    @objc func buttonPressed(_ sender: UIButton) {
+        performSegue(withIdentifier: "ShowDetail", sender: sender)
+    }
     
     @IBAction func pageChanged(_ sender: UIPageControl) {
         UIView.animate(withDuration: 0.3, delay: 0, options: [.curveEaseInOut], animations: {
