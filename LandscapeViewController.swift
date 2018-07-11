@@ -113,6 +113,7 @@ class LandscapeViewController: UIViewController {
         
         // Utilizamos esta variable para asegurarnos que sólo colocamos los buttons en landscape una sola vez.
         if firstTime {
+            
             firstTime = false
             
             switch search.state {
@@ -121,18 +122,70 @@ class LandscapeViewController: UIViewController {
                 // temporal, "list", y se los pasamos a "titleButtons", en los
                 // demás casos, salimos.
             case .notSearchYet: break
-            case .loading: break
-            case .noResults: break
+            case .loading: showSpinner()
+            case .noResults: showNothingFoundLabel()
             case .results(let list): titleButtons(list)
             }
         }
     }
     
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
+    
+    /* Aquí primero crea un objeto UILabel y le da texto y un color. Para hacer que la
+     etiqueta se vea a través, la propiedad backgroundColor se establece en UIColor.clear.
+     
+     La llamada a "sizeToFit ()" le dice a la etiqueta que cambie el tamaño a un tamaño óptimo.
+     Podríamos  darle a la  etiqueta un "frame" que sea lo suficientemente grande  para empezar,
+     pero esto me parece mucho más fácil.(También ayuda cuando traduces la aplicación a un idioma
+     diferente, en ese caso, es posible que no sepa de antemano qué tamaño debe tener la etiqueta.
+     El único problema es que queremos centrar la etiqueta en la vista y como vimos antes, eso se
+     complica cuando el ancho o la altura son impares (algo que no sabemos de antemano). Entonces
+     aquí usamos un pequeño truco para forzar siempre las dimensiones de la etiqueta para que sean
+     números pares: width = ceil (width / 2) * 2.
+     
+     Si divide un número como 11 por 2, obtiene 5.5. La función ceil () redondea 5.5 para hacer 6,
+     y luego multiplicar por 2 para obtener un valor final de 12. Esta fórmula siempre le da el
+     próximo número par si el original es impar. (Solo tienes que hacer esto porque estos valores
+     tienen tipo CGFloat. Si fueran enteros, no tendríamos que preocuparnos por las partes fraccionarias).*/
+    
+    /* Nota: Porque no está usando un número codificado como 480 o 568, sino
+     "scrollView.bounds" para determinar el ancho de la pantalla, el código
+     para centrar la etiqueta funciona correctamente en todos los modelos de iPhone. */
+    private func showNothingFoundLabel() {
+        
+        let label = UILabel(frame: CGRect.zero)
+        label.text = "Nothing Found"
+        label.textColor = UIColor.white
+        label.backgroundColor = UIColor.clear
+        
+        label.sizeToFit()
+        
+        var rect = label.frame
+        rect.size.width = ceil(rect.size.width/2) * 2 // make even
+        rect.size.height = ceil(rect.size.height/2) * 2 // make even
+        label.frame = rect
+        
+        label.center = CGPoint(x: scrollView.bounds.midX, y: scrollView.bounds.midY)
+        view.addSubview(label)
     }
     
+    // MARK: - Spinner
+    
+    /* Nota: Agregó 0.5 a la posición central del rotor. Este tipo de spinner es
+     37 puntos de ancho y alto, que no es un número par. Si fueras a colocar el
+     centro de esta vista en el centro exacto de la pantalla en (284, 160) luego
+     extendería 18.5 puntos a cualquier extremo. La esquina superior izquierda de
+     esa ruleta está en coordenadas (265.5, 141.5), lo que hace que parezca borroso.
+     Lo mejor es evitar colocar objetos en coordenadas fraccionarias. Al agregar 0.5 a
+     tanto la posición X como la Y, la ruleta se coloca en (266, 142) y todo
+     se ve bien. Preste atención a esto cuando trabaje con la propiedad del centro y
+     objetos que tienen anchuras o alturas impares. */
+    private func showSpinner() {
+        let spinner = UIActivityIndicatorView(activityIndicatorStyle: .whiteLarge)
+        spinner.center = CGPoint(x: scrollView.bounds.midX + 0.5, y: scrollView.bounds.midY + 0.5)
+        spinner.tag = 1000
+        view.addSubview(spinner)
+        spinner.startAnimating()
+    }
     
     // MARK: - LandScape methods
     
@@ -175,30 +228,30 @@ class LandscapeViewController: UIViewController {
         
         switch scrollViewWidth {
         case 568:
-            columnsPerPage = 6
-            itemWidth = 94
-            marginX = 2
+            columnsPerPage  = 6
+            itemWidth       = 94
+            marginX         = 2
             
         case 667:
-            columnsPerPage = 7
-            itemWidth = 95
-            itemHeight = 98
-            marginX = 1
-            marginY = 29
+            columnsPerPage  = 7
+            itemWidth       = 95
+            itemHeight      = 98
+            marginX         = 1
+            marginY         = 29
             
         case 736:
-            columnsPerPage = 8
-            rowsPerPage = 4
-            itemWidth = 92
+            columnsPerPage  = 8
+            rowsPerPage     = 4
+            itemWidth       = 92
             
         default:
             break
         }
         
         
-        var row = 0
-        var column = 0
-        var x = marginX
+        var row     = 0
+        var column  = 0
+        var x       = marginX
         
         for (_, searchResult) in searchResults.enumerated() {
             // 1.- Creamos el botón, utilizando el título con el índice del array.
@@ -291,6 +344,28 @@ class LandscapeViewController: UIViewController {
             downloadTasks.append(downloadTask)
         }
     }
+    
+    
+    func searchResultsReceived() {
+        
+        hideSpinner()
+        
+        switch search.state {
+        case .notSearchYet, .loading:
+            break
+        case .noResults:
+            showNothingFoundLabel()
+        case .results(let list):
+            titleButtons(list)
+        }
+    }
+    
+    private func hideSpinner() {
+        
+        // "viewWithTag" puede devolver un nil de ahí el "?"
+        view.viewWithTag(1000)?.removeFromSuperview()
+    }
+    
     
     // MARK: - Actions
     

@@ -2,11 +2,11 @@
 //  Search.swift
 //  StoreSearch
 //
-//  Created by Usuario on 9/7/18.
+//  Created by Piercing on 9/7/18.
 //  Copyright © 2018 com.devspain. All rights reserved.
 //
 
-import Foundation
+import UIKit
 
 
 class Search {
@@ -100,6 +100,7 @@ class Search {
             // la llamada a 'cancel()'. Podíamos haberlo hecho también con if-let. Si ponemos '!' y el opcional es 'nil' se bloqueará la aplicación,
             // dado que cuando la primera vez que el usuario escribe algo en la searchBar, 'dataTask' aún será 'nil' por lo que se caería la app.
             dataTask?.cancel()
+            UIApplication.shared.isNetworkActivityIndicatorVisible = true
             
             // Activamos el activity indicator.
             state = .loading
@@ -174,6 +175,7 @@ class Search {
                 // al fallar. Esto se hace para que SearchViewController pueda  volver a cargar su vista de tabla
                 // o, en el caso de un error, muestre una vista de alerta.
                 DispatchQueue.main.async {
+                    UIApplication.shared.isNetworkActivityIndicatorVisible = false
                     completion(success)
                 }
             })

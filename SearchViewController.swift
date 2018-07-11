@@ -84,7 +84,7 @@ class SearchViewController: UIViewController {
     // MARK: Segue
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-   
+        
         
         // Pasamos los datos de la row seleccionada a "DetailViewController"
         if segue.identifier == "ShowDetail" {
@@ -258,17 +258,35 @@ extension SearchViewController: UISearchBarDelegate {
         // Hacemos que la nueva clase creada "Search" haga el trabajo de búsqueda que se hacía antes aquí.
         search.performSearch(for: searchBar.text!, category: Search.Category(rawValue: segmentControl.selectedSegmentIndex)!,
                              completion: { success in
-            if !success {
-                self.showNetWorkError("Error NetWork", "A connection error occurred when accessing our servers")
-            }
-            // Recargamos la tabla.
-            self.tableView.reloadData()
+                                if !success {
+                                    self.showNetWorkError("Error NetWork", "A connection error occurred when accessing our servers")
+                                }
+                                // Recargamos la tabla.
+                                self.tableView.reloadData()
+                                
+                                /* La secuencia de eventos aquí es bastante interesante. Cuando la búsqueda comienza, no hay creado objeto
+                                 "LandscapeViewController" todavía porque la única forma de iniciar una búsqueda es desde el modo vertical.
+                                 
+                                 Pero en el momento en que se invoca el closure, el dispositivo puede haber girado y
+                                 si eso ha  sucedido "self.landscapeViewController" contendrá  una referencia válida.
+                                 
+                                 Después de la rotación también le dio al nuevo "LandscapeViewController" una referencia al
+                                 objeto de búsqueda activo. Ahora solo tiene que decir que los resultados de búsqueda están
+                                 disponibles para poder crear los botones y rellenarlos con imágenes.
+                                 
+                                 Por supuesto, si todavía está en modo vertical para cuando finaliza la búsqueda,
+                                 "self.landscapeViewController" es nil y la llamada a  "searchResultsReceived ()"
+                                 simplemente se ignorará debido al encadenamiento opcional ?. (Podría haber usado
+                                 "if let" aquí para desenvolver el valor de  "self.landscapeViewController", pero
+                                 el encadenamiento opcional tiene el mismo efecto y es más corto para escribir). */
+                                self.landscapeViewController?.searchResultsReceived()
+                                
         })
         
         // Recargamos la tabla y ocultamos el teclado.
         tableView.reloadData()
         searchBar.resignFirstResponder()
-
+        
     }
     
     // Función para ajustar la posición de la 'searchBar' y que quede por encima de la tabla y
@@ -304,7 +322,7 @@ extension SearchViewController: UITableViewDataSource {
             //  "list", y luego la usamos dentro del "case" para leer cuántos elementos trae el array.
             
             // Asñi es como hacemos uso del "valor asociado". Este patrón, usando un "switch" para ver
-            // el "estado", va a ser muy común en el código.
+        // el "estado", va a ser muy común en el código.
         case .results(let list):
             return list.count
         }
@@ -315,7 +333,7 @@ extension SearchViewController: UITableViewDataSource {
         
         switch search.state {
             
-            // Si no hay celda aún (nos devuelven 0 celdas/rows) capturamos el error con el métoo "fatalError".
+        // Si no hay celda aún (nos devuelven 0 celdas/rows) capturamos el error con el métoo "fatalError".
         case .notSearchYet:
             fatalError("Should never get here")
             
@@ -367,11 +385,11 @@ extension SearchViewController: UITableViewDelegate {
         
         switch search.state {
             
-        // Si no hay resultados, devuelve nil para estos tres casos
+            // Si no hay resultados, devuelve nil para estos tres casos
         // ya que solo es factible para cuando el "case" es ".results".
         case .notSearchYet, .loading, .noResults:
             return nil
-            // Si hay resultados, devolvemos el "indexPath" de la row seleccionada.
+        // Si hay resultados, devolvemos el "indexPath" de la row seleccionada.
         case .results:
             return indexPath
         }
