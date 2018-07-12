@@ -38,7 +38,7 @@ class SearchResultCell: UITableViewCell {
     // MARK: Cells
     
     // Este método cancela cualquier descarga
-    // de imagen que aún está en progreso.
+    // de imágenes que aún  estén en progreso.
     override func prepareForReuse() {
         super.prepareForReuse()
         
@@ -57,7 +57,7 @@ class SearchResultCell: UITableViewCell {
         if searchResult.artistName.isEmpty {
             artistNameLabel.text = "Unknown"
         } else {
-            artistNameLabel.text = String(format:" %@ (%@)", searchResult.artistName, kindForDisplay(searchResult.kind))
+            artistNameLabel.text = String(format:" %@ (%@)", searchResult.artistName, searchResult.kindForDisplay())
         }
         
         // Esto le dice a UIImageView que cargue la imagen de 'artworkSmallURL' y la coloque en la image view de la
@@ -67,26 +67,6 @@ class SearchResultCell: UITableViewCell {
         artworkImageView.image = UIImage(named: "Placeholder")
         if let smallURL = URL(string: searchResult.artworkSmallURL) {
             downloadTask = artworkImageView.loadImage(url: smallURL)
-        }
-    }
-    
-    // MARK: Others
-    
-    func kindForDisplay(_ kind: String) -> String {
-        
-        switch kind {
-        case "song": return "Song"
-        case "book": return "Book"
-        case "album": return "Album"
-        case "ebook": return "E-Book"
-        case "software": return "App"
-        case "podcast": return "Podcast"
-        case "feature-movie": return "Movie"
-        case "audiobook": return "Audio Book"
-        case "tv-episode": return "TV Episode"
-        case "music-video": return "Music Video"
-        default: return kind
-            
         }
     }
 }
