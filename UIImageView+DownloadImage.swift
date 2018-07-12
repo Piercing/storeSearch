@@ -27,7 +27,7 @@ extension UIImageView {
                 // o un 404 o  algo inesperado. Comprobamos cada paso, prog. defensiva.
                 let data = try? Data(contentsOf: url),
                 let image = UIImage(data: data) {
-                // 4.- Una vez que tengamos la imagen se  puede poner ya en la la propiedad imagen de 'UIIMageView's'.
+                // 4.- Una vez que tengamos la imagen se  puede poner ya en la la propiedad imagen de 'UIImageView's'.
                 // Debemos de  hacerlo en el hilo principal, ya que  es 'UI'. El tema difícil es que la UIImage ya no
                 // exista por el  momento en la imagen  que nos llega del "servidor". Puede tardar unos segundos y el
                 // usuario  puede navegar a través de la  aplicación en la medida  de lo posible. Esto no sucederá en
@@ -37,7 +37,7 @@ extension UIImageView {
                 // a la propia UIImageView. Dentro de 'DispatchQueue' es necesario comprobar si 'self' todavía existe;
                 // es decir, la UIImageView si no, entonces no hay una UIImageView para ajustar la imagen en la celda.
                 DispatchQueue.main.async {
-                    if let strongSelf = self { // Comprobamos que la UIImageView exista.
+                    if let strongSelf = self { // Comprobamos que la UIImageView exista ('self' es la imagen).
                         strongSelf.image = image
                     }
                 }
