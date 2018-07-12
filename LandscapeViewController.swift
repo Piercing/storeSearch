@@ -253,12 +253,14 @@ class LandscapeViewController: UIViewController {
         var column  = 0
         var x       = marginX
         
-        for (_, searchResult) in searchResults.enumerated() {
+        for (index, searchResult) in searchResults.enumerated() {
             // 1.- Creamos el botón, utilizando el título con el índice del array.
             // Si hay 200 resultados de búsqueda, debemos terminar con 200 botones.
             // Personalizamos el boton, dándole una imagen de fonde en vez de título.
             let button = UIButton(type: .custom)
             button.setBackgroundImage(UIImage(named: "LandscapeButton"), for: .normal)
+            button.tag = 2000 + index
+            button.addTarget(self, action: #selector(buttonPressed), for: .touchUpInside)
             
             // Llamamos al método para descargar las imágenes 60x60 para agregarlas a los botones.
             downloadImage(for: searchResult, andPlaceOn: button)
@@ -382,20 +384,7 @@ class LandscapeViewController: UIViewController {
     
     
     // MARK: - Actions
-    
-    // MARK: - Prepare for segue
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if segue.identifier == "ShowDetail" {
-            if case .results(let list) = search.state {
-                let detailViewController = segue.destination as! DetailViewController
-                let searchResult = list[(sender as! UIButton).tag - 2000]
-                detailViewController.searchResult = searchResult
-            }
-        }
-    }
-            
-            // comentario
-    
+
     @objc func buttonPressed(_ sender: UIButton) {
         performSegue(withIdentifier: "ShowDetail", sender: sender)
     }
@@ -405,6 +394,27 @@ class LandscapeViewController: UIViewController {
                         self.scrollView.contentOffset = CGPoint(x: self.scrollView.bounds.size.width * CGFloat(sender.currentPage), y: 0)
         }
             , completion: nil)
+    }
+    
+    // MARK: Segue
+    
+    
+    // Al pulsar el botón desencadena una transición suave, lo que significa
+    // que necesita un ----> "preparar-for-segue" para hacer todo el trabajo:
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == "ShowDetail" {
+            if case .results(let list) = search.state {
+                let detailViewController = segue.destination as! DetailViewController
+                // Es casi igual al "prepare-for-sender", salvo que ahora no obtiene
+                // el índice del objeto "SearchResult"a partir del "index-path",pero
+                // sí desde el "tag" del botón (menos 2000).
+                
+                // Para que todo esto funcione debemos de hacer primero un "segue" en
+                // el "Story-Board".
+                let searchResult = list[(sender as! UIButton).tag - 2000]
+                detailViewController.searchResult = searchResult
+            }
+        }
     }
 }
 
