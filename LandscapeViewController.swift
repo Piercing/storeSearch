@@ -394,7 +394,7 @@ class LandscapeViewController: UIViewController {
         }
     }
             
-            
+            // comentario
     
     @objc func buttonPressed(_ sender: UIButton) {
         performSegue(withIdentifier: "ShowDetail", sender: sender)
